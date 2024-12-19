@@ -6,22 +6,13 @@ body {
     margin: 10px;
 }
 
-ul {
-    padding-left: 10px;
+#user-interface {
+    display: flex;
+    flex-direction: column;
+
+    width: 50%;    
 }
 
-li {
-    background: white;
-    list-style-type: none;
-    padding: 5px;
-}
+.btn {
 
-a {
-    color: black;
-    text-decoration: none;
-    padding: 5px;
-}
-
-a:hover {
-    background: #ddd;
 }
