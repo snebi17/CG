@@ -9,9 +9,8 @@ import { Camera } from "engine/core.js";
 import { Transform } from "./engine/core.js";
 import { Cue } from "logic/Cue.js";
 
-// import { RotateAnimator } from "./engine/animators/RotateAnimator.js";
-// import { Transform } from "./engine/core.js";
 import { quat } from "glm";
+import { Table } from "./logic/Table.js";
 
 const canvas = document.querySelector("canvas");
 const renderer = new UnlitRenderer(canvas);
@@ -19,11 +18,6 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 await loader.load(new URL("../../../models/table/table.gltf", import.meta.url));
-
-const balls = loader.loadNodes("Ball");
-const cue = loader.loadNode("Stick");
-
-const whiteBall = balls.find((ball) => ball.name == "Ball.White");
 
 // const startingRotation = cue.getComponentOfType(Transform).rotation;
 // const startingTranslation = cue.getComponentOfType(Transform).translation;
@@ -39,10 +33,22 @@ if (!scene) {
 	throw new Error("A default scene is required to run this example");
 }
 
+const ballNodes = loader.loadNodes("Ball");
+const holeNodes = loader.loadNodes("Hole");
+const edgeNodes = loader.loadNodes("Edge");
+
+const table = new Table(ballNodes, holeNodes, edgeNodes);
+
+const cueNode = loader.loadNode("Stick");
+
+console.log(table);
+// console.log(cue);
+
 const camera = scene.find((node) => node.getComponentOfType(Camera));
 if (!camera) {
 	throw new Error("A camera in the scene is require to run this example");
 }
+// const cue = new Cue(camera, cueNode, 0);
 
 // camera.getComponentOfType(Transform).translation = {
 // 	...whiteBall.node.getComponentOfType(Transform).translation,
@@ -63,6 +69,7 @@ if (!camera) {
 // console.log(camera.getComponentOfType(Transform).translation);
 // console.log(whiteBall.node.getComponentOfType(Transform).translation);
 
+// camera.addComponent(new OrbitController(whiteBall.node, canvas));
 camera.addComponent(new FirstPersonController(camera, canvas));
 /**
  * TODO: Add cue to be at the centre of camera and after collision resolution place the camera at the white ball's centre.

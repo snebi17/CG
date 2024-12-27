@@ -447,6 +447,7 @@ export class GLTFLoader {
 
 	loadCamera(nameOrIndex) {
 		const gltfSpec = this.findByNameOrIndex(this.gltf.cameras, nameOrIndex);
+		console.log(gltfSpec);
 		if (!gltfSpec) {
 			return null;
 		}
@@ -509,7 +510,7 @@ export class GLTFLoader {
 			node.addComponent(this.loadMesh(gltfSpec.mesh));
 		}
 
-		this.cache.set(gltfSpec, node);
+		this.cache.set(gltfSpec);
 		return node;
 	}
 
@@ -522,12 +523,13 @@ export class GLTFLoader {
 
 		let nodes = [];
 
-		for (let gltfSpec of gltfSpecs) {
+		for (const gltfSpec of gltfSpecs) {
 			if (!gltfSpec) {
 				return null;
 			}
 			if (this.cache.has(gltfSpec)) {
-				return this.cache.get(gltfSpec);
+				nodes.push(this.cache.get(gltfSpec));
+				continue;
 			}
 
 			const node = new Node();
@@ -549,7 +551,7 @@ export class GLTFLoader {
 			}
 
 			this.cache.set(gltfSpec, node);
-			nodes.push({ name: gltfSpec.name, node: node });
+			nodes.push(gltfSpec);
 		}
 
 		return nodes;

@@ -29,7 +29,6 @@ export class FirstPersonController {
 		this.maxSpeed = maxSpeed;
 		this.decay = decay;
 		this.pointerSensitivity = pointerSensitivity;
-		console.log(this.node);
 
 		this.initHandlers();
 	}
@@ -112,10 +111,12 @@ export class FirstPersonController {
 				dt
 			);
 
+			// console.log(`[${this.pitch}, ${this.yaw}]`);
+
 			// Update rotation based on the Euler angles.
 			const rotation = quat.create();
 			quat.rotateY(rotation, rotation, this.yaw);
-			// quat.rotateX(rotation, rotation, this.pitch);
+			quat.rotateX(rotation, rotation, this.pitch);
 			transform.rotation = rotation;
 		}
 	}

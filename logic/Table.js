@@ -1,6 +1,7 @@
 export class Table {
-	constructor() {
-		this.balls = [];
-		this.pockets = [];
+	constructor(balls, holes, edges) {
+		this.balls = balls;
+		this.holes = holes;
+		this.edges = edges;
 	}
 }
