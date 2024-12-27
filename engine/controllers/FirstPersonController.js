@@ -115,7 +115,7 @@ export class FirstPersonController {
 			// Update rotation based on the Euler angles.
 			const rotation = quat.create();
 			quat.rotateY(rotation, rotation, this.yaw);
-			quat.rotateX(rotation, rotation, this.pitch);
+			// quat.rotateX(rotation, rotation, this.pitch);
 			transform.rotation = rotation;
 		}
 	}

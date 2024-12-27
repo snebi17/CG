@@ -25,14 +25,14 @@ const cue = loader.loadNode("Stick");
 
 const whiteBall = balls.find((ball) => ball.name == "Ball.White");
 
-const startingRotation = cue.getComponentOfType(Transform).rotation;
-const startingTranslation = cue.getComponentOfType(Transform).translation;
+// const startingRotation = cue.getComponentOfType(Transform).rotation;
+// const startingTranslation = cue.getComponentOfType(Transform).translation;
 
-startingRotation[1] = -0.6;
-startingRotation[0] = 0.2;
-startingRotation[2] = 0.1;
-startingTranslation[1] = 1;
-startingTranslation[2] = 1;
+// startingRotation[1] = -0.6;
+// startingRotation[0] = 0.2;
+// startingRotation[2] = 0.1;
+// startingTranslation[1] = 1;
+// startingTranslation[2] = 1;
 
 const scene = loader.loadScene(loader.defaultScene);
 if (!scene) {
@@ -48,17 +48,17 @@ if (!camera) {
 // 	...whiteBall.node.getComponentOfType(Transform).translation,
 // };
 
-camera.getComponentOfType(Transform).translation = [1.5, 1.5, 0, 0];
+// camera.getComponentOfType(Transform).translation = [1.5, 1.5, 0, 0];
 
-console.log(camera.getComponentOfType(Transform).rotation);
-const rotation = quat.create();
+// console.log(camera.getComponentOfType(Transform).rotation);
+// const rotation = quat.create();
 // quat.rotateY(rotation, rotation, 1.6260000000000012);
 // quat.rotateX(rotation, rotation, 0.14400000000000007);
 // quat.rotateX(rotation, rotation, -0.5);
 // quat.rotateY(rotation, rotation, 0.5);
 
-camera.getComponentOfType(Transform).rotation = rotation;
-console.log(camera.getComponentOfType(Transform).rotation);
+// camera.getComponentOfType(Transform).rotation = rotation;
+// console.log(camera.getComponentOfType(Transform).rotation);
 
 // console.log(camera.getComponentOfType(Transform).translation);
 // console.log(whiteBall.node.getComponentOfType(Transform).translation);
@@ -67,7 +67,7 @@ camera.addComponent(new FirstPersonController(camera, canvas));
 /**
  * TODO: Add cue to be at the centre of camera and after collision resolution place the camera at the white ball's centre.
  */
-camera.addComponent(new Cue(camera, cue, 0));
+// camera.addComponent(new Cue(camera, cue, 0));
 
 function update(time, dt) {
 	scene.traverse((node) => {
