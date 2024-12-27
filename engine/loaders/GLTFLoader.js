@@ -28,7 +28,6 @@ export class GLTFLoader {
 	async load(url) {
 		this.gltfUrl = url;
 		this.gltf = await this.fetchJson(this.gltfUrl);
-		console.log(this.gltf);
 		this.defaultScene = this.gltf.scene ?? 0;
 		this.cache = new Map();
 
@@ -44,10 +43,16 @@ export class GLTFLoader {
 
 	// Finds an object in list at the given index, or if the 'name'
 	// property matches the given name.
-	findByNameOrIndex(list, nameOrIndex) {
+	findByNameOrIndex(list, nameOrIndex, like = false) {
 		if (typeof nameOrIndex === "number") {
 			return list[nameOrIndex];
 		} else {
+			if (like) {
+				return list.filter((element) =>
+					element.name.includes(nameOrIndex)
+				);
+			}
+
 			return list.find((element) => element.name === nameOrIndex);
 		}
 	}
@@ -478,6 +483,7 @@ export class GLTFLoader {
 
 	loadNode(nameOrIndex) {
 		const gltfSpec = this.findByNameOrIndex(this.gltf.nodes, nameOrIndex);
+
 		if (!gltfSpec) {
 			return null;
 		}
@@ -505,6 +511,48 @@ export class GLTFLoader {
 
 		this.cache.set(gltfSpec, node);
 		return node;
+	}
+
+	loadNodes(nameOrIndex) {
+		const gltfSpecs = this.findByNameOrIndex(
+			this.gltf.nodes,
+			nameOrIndex,
+			true
+		);
+
+		let nodes = [];
+
+		for (let gltfSpec of gltfSpecs) {
+			if (!gltfSpec) {
+				return null;
+			}
+			if (this.cache.has(gltfSpec)) {
+				return this.cache.get(gltfSpec);
+			}
+
+			const node = new Node();
+
+			node.addComponent(new Transform(gltfSpec));
+
+			if (gltfSpec.children) {
+				for (const childIndex of gltfSpec.children) {
+					node.addChild(this.loadNode(childIndex));
+				}
+			}
+
+			if (gltfSpec.camera !== undefined) {
+				node.addComponent(this.loadCamera(gltfSpec.camera));
+			}
+
+			if (gltfSpec.mesh !== undefined) {
+				node.addComponent(this.loadMesh(gltfSpec.mesh));
+			}
+
+			this.cache.set(gltfSpec, node);
+			nodes.push({ name: gltfSpec.name, node: node });
+		}
+
+		return nodes;
 	}
 
 	loadScene(nameOrIndex) {
