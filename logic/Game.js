@@ -1,6 +1,9 @@
-import { ballMappings } from "./mappings/BallMappings.js";
-import { tableMappings } from "./mappings/TableMappings.js";
-import { BallType, GameType, GameState } from "./Types.js";
+// import { IdTableMapping } from "./mappings/TableMappings.js";
+// import { IdBallMapping } from "./mappings/BallMappings.js";
+
+import { Ball } from "./ball/Ball.js";
+import { Types as GameTypes, States as GameStates } from "./props/GameProps.js";
+import { Types as BallTypes } from "./props/BallProps.js";
 
 class Player {
 	constructor(id, type) {
@@ -11,7 +14,7 @@ class Player {
 }
 
 export class Game {
-	constructor(scene) {
+	constructor(scene, camera, renderer) {
 		/**
 		 * scene - contains all scene nodes
 		 * gameType - sets either singleplayer or multiplayer
@@ -25,19 +28,8 @@ export class Game {
 		 *
 		 */
 		this.scene = scene;
-
-		this.gameType = null;
-		this.gameState = GameState.LOADING;
-
-		/**
-		 *
-		 */
-		this.player = null;
-		this.players = null;
-		this.currentPlayer = -1;
-
-		this.activeBalls = [];
-		this.pocketedBalls = [];
+		this.camera = camera;
+		this.renderer = renderer;
 
 		this.init();
 	}
@@ -54,9 +46,36 @@ export class Game {
 	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
 	 */
 
-	init() {
-		this.balls = this.scene;
-		this.gameState = GameState.LOADING;
+	async init() {
+		this.nodes = [];
+		this.scene.traverse((node) => this.nodes.push(node));
+
+		this.gameState = GameStates.LOADING;
+		this.gameType = null;
+
+		this.player = null;
+		this.players = null;
+		this.currentPlayer = -1;
+
+		this.extractBalls();
+		this.pocketedBalls = [];
+
+		this.extractTable();
+		this.extractCue();
+	}
+
+	extractBalls() {
+		this.balls = this.nodes
+			.slice(18, 34)
+			.map((node, i) => new Ball(i, node));
+	}
+
+	extractTable() {
+		this.table = this.nodes.slice();
+	}
+
+	extractCue() {
+		this.cue = this.nodes.slice();
 	}
 
 	coinFlip() {
@@ -65,11 +84,11 @@ export class Game {
 
 	break() {
 		if (this.pocketedBalls.any()) {
-			this.players.push(new Player(0, BallType.SOLID));
-			this.players.push(new Player(1, BallType.STRIPES));
-			this.gameState = GameState.IN_PROGRESS;
+			this.players.push(new Player(0, BallTypes.SOLID));
+			this.players.push(new Player(1, BallTypes.STRIPES));
+			this.gameState = GameStates.IN_PROGRESS;
 		} else {
-			this.gameState = GameState.PLAYER_NOT_SET;
+			this.gameState = GameStates.PLAYER_NOT_SET;
 		}
 	}
 
@@ -79,14 +98,24 @@ export class Game {
 		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
 	}
 
-	update() {}
-
 	start() {
-		if (this.settings.gameType == GameType.SINGLEPLAYER) {
-			this.player = new Player(0, BallType.BOTH);
-		} else {
-			this.coinFlip();
-			this.break();
-		}
+		// if (this.settings.gameType == GameTypes.SINGLEPLAYER) {
+		// 	this.player = new Player(0, BallTypes.BOTH);
+		// } else {
+		// 	this.coinFlip();
+		// 	this.break();
+		// }
+	}
+
+	update(time, dt) {
+		this.scene.traverse((node) => {
+			for (const component of node.components) {
+				component.update?.(time, dt);
+			}
+		});
+	}
+
+	render() {
+		this.renderer.render(this.scene, this.camera);
 	}
 }

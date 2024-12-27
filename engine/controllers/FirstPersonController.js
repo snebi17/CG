@@ -76,6 +76,8 @@ export class FirstPersonController {
 			vec3.sub(acc, acc, right);
 		}
 
+		if (this.keys["Space"]) {
+		}
 		// Update velocity based on acceleration.
 		vec3.scaleAndAdd(
 			this.velocity,

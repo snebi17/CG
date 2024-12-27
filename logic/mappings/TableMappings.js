@@ -1,4 +1,4 @@
-const tableMappings = {
+const IdTableMapping = {
 	Edges: {},
 	Holes: {
 		Left: {
@@ -14,4 +14,4 @@ const tableMappings = {
 	},
 };
 
-export { tableMappings };
+export { IdTableMapping };

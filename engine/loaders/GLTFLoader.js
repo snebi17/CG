@@ -447,7 +447,6 @@ export class GLTFLoader {
 
 	loadCamera(nameOrIndex) {
 		const gltfSpec = this.findByNameOrIndex(this.gltf.cameras, nameOrIndex);
-		console.log(gltfSpec);
 		if (!gltfSpec) {
 			return null;
 		}
