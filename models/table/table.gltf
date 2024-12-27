@@ -166,7 +166,7 @@
 		},
 		{
 			"mesh":5,
-			"name":"Hole.004",
+			"name":"Pocket.004",
 			"rotation":[
 				0.70710688829422,
 				0,
@@ -176,7 +176,7 @@
 		},
 		{
 			"mesh":6,
-			"name":"Hole.005",
+			"name":"Pocket.005",
 			"rotation":[
 				0.70710688829422,
 				0,
@@ -186,7 +186,7 @@
 		},
 		{
 			"mesh":7,
-			"name":"Hole.003",
+			"name":"Pocket.003",
 			"rotation":[
 				0.70710688829422,
 				0,
@@ -196,7 +196,7 @@
 		},
 		{
 			"mesh":8,
-			"name":"Hole.001",
+			"name":"Pocket.001",
 			"rotation":[
 				0.70710688829422,
 				0,
@@ -206,7 +206,7 @@
 		},
 		{
 			"mesh":9,
-			"name":"Hole",
+			"name":"Pocket",
 			"rotation":[
 				0.70710688829422,
 				0,
@@ -216,7 +216,7 @@
 		},
 		{
 			"mesh":10,
-			"name":"Hole.002",
+			"name":"Pocket.002",
 			"rotation":[
 				0.70710688829422,
 				0,

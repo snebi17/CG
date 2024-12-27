@@ -9,8 +9,10 @@ import { Camera } from "engine/core.js";
 import { Transform } from "./engine/core.js";
 import { Cue } from "logic/Cue.js";
 
+import { Game } from "./logic/Game.js";
+
 import { quat } from "glm";
-import { Table } from "./logic/Table.js";
+import { Table } from "./logic/table/Table.js";
 
 const canvas = document.querySelector("canvas");
 const renderer = new UnlitRenderer(canvas);
@@ -18,6 +20,8 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 await loader.load(new URL("../../../models/table/table.gltf", import.meta.url));
+
+const game = new Game();
 
 // const startingRotation = cue.getComponentOfType(Transform).rotation;
 // const startingTranslation = cue.getComponentOfType(Transform).translation;
@@ -34,10 +38,10 @@ if (!scene) {
 }
 
 const ballNodes = loader.loadNodes("Ball");
-const holeNodes = loader.loadNodes("Hole");
+const pocketNodes = loader.loadNodes("Pocket");
 const edgeNodes = loader.loadNodes("Edge");
 
-const table = new Table(ballNodes, holeNodes, edgeNodes);
+const table = new Table(ballNodes, pocketNodes, edgeNodes);
 
 const cueNode = loader.loadNode("Stick");
 
@@ -75,6 +79,8 @@ camera.addComponent(new FirstPersonController(camera, canvas));
  * TODO: Add cue to be at the centre of camera and after collision resolution place the camera at the white ball's centre.
  */
 // camera.addComponent(new Cue(camera, cue, 0));
+
+function init() {}
 
 function update(time, dt) {
 	scene.traverse((node) => {
