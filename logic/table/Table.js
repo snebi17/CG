@@ -1,5 +1,5 @@
-import { ballMappings } from "../mappings/BallMappings.js";
-import { tableMappings } from "../mappings/TableMappings.js";
+// import { IdBallMapping } from "../mappings/BallMappings.js";
+// import { IdTableMapping } from "../mappings/TableMappings.js";
 
 export class Table {
 	constructor(balls, pockets, edges) {
