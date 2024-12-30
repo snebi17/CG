@@ -1,4 +1,7 @@
-export class Physics {
+import { Physics } from "../Physics.js";
+
+
+export class BallPhysics implements Physics {
 	constructor(ball) {
 		this.ball = ball;
 		this.velocity = [0, 0, 0];
