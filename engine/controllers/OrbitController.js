@@ -2,6 +2,8 @@ import { quat, vec3, mat4 } from "glm";
 
 import { Transform } from "../core/Transform.js";
 
+import { getGlobalViewMatrix } from "../core/SceneUtils.js";
+
 export class OrbitController {
 	constructor(
 		node,
@@ -96,7 +98,7 @@ export class OrbitController {
 	setToBall(ball) {
 		const ballPosition = mat4.getTranslation(
 			vec3.create(),
-		    getGlobalModelMatrix(ball.node)
+		    getGlobalViewMatrix(ball.node)
 		);
 		console.log(ballPosition)
 	}

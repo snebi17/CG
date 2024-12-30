@@ -40,7 +40,7 @@ function resize({ displaySize: { width, height } }) {
 
 const game = new Game(scene, camera, renderer);
 
-//controller.setToBall(game.cue);
+controller.setToBall(game.cue);
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem(game).start();
