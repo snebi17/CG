@@ -5,6 +5,9 @@ import { GLTFLoader } from "../engine/loaders/GLTFLoader.js";
 
 import { Camera } from "engine/core.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
+// import { OrbitController } from "./engine/controllers/OrbitController.js";
+import { TurntableController } from "./engine/controllers/TurntableController.js";
+// import { TouchController } from "./engine/controllers/TouchController.js";
 
 import { Game } from "./logic/Game.js";
 
@@ -27,10 +30,6 @@ if (!camera) {
 }
 
 camera.addComponent(new FirstPersonController(camera, canvas));
-
-/**
- * TODO: Add cue to be at the centre of camera and after collision resolution place the camera at the white ball's centre.
- */
 
 function resize({ displaySize: { width, height } }) {
 	camera.getComponentOfType(Camera).aspect = width / height;

@@ -1,9 +1,12 @@
-// import { IdTableMapping } from "./mappings/TableMappings.js";
-// import { IdBallMapping } from "./mappings/BallMappings.js";
+import { Transform } from "../engine/core.js";
 
-import { Ball } from "./ball/Ball.js";
-import { Types as GameTypes, States as GameStates } from "./props/GameProps.js";
-import { Types as BallTypes } from "./props/BallProps.js";
+import { Ball } from "./components/Ball.js";
+import { Table } from "./components/Table.js";
+import { Edge } from "./components/Edge.js";
+import { Cue } from "./Cue.js";
+import { Pocket } from "./components/Pocket.js";
+
+import { BallType, GameState } from "./common/Enums.js";
 
 class Player {
 	constructor(id, type) {
@@ -17,16 +20,10 @@ export class Game {
 	constructor(scene, camera, renderer) {
 		/**
 		 * scene - contains all scene nodes
-		 * gameType - sets either singleplayer or multiplayer
-		 *
-		 * player - gets set if gameType == singleplayer else null
-		 * players - gets set if gameType == multiplayer
-		 * currentPlayer - needed for switching between player turns
-		 * pocketedBalls - contains balls that were pocketed so players gets set and to track gamestate
-		 * gameState - tracks state of the game
-		 *
-		 *
+		 * camera - self explanatory
+		 * renderer - renders the scene to canvas
 		 */
+
 		this.scene = scene;
 		this.camera = camera;
 		this.renderer = renderer;
@@ -46,36 +43,46 @@ export class Game {
 	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
 	 */
 
-	async init() {
+	init() {
+		// nodes are used for easier iteration through scene nodes
 		this.nodes = [];
 		this.scene.traverse((node) => this.nodes.push(node));
 
-		this.gameState = GameStates.LOADING;
+		// gameState - used for state management
+		// gameType - used for initialization of player/players depending on mode of user choice
+		this.gameState = GameState.LOADING;
 		this.gameType = null;
 
+		// player - player object if singleplayer
+		// players - array of players if multiplayer
+		// currentPlayer - used for switching players on each turn
 		this.player = null;
 		this.players = null;
 		this.currentPlayer = -1;
 
-		this.extractBalls();
-		this.pocketedBalls = [];
-
-		this.extractTable();
-		this.extractCue();
+		this.cue = this.setCue();
+		this.balls = this.setBalls();
+		this.table = this.setTable();
 	}
 
-	extractBalls() {
-		this.balls = this.nodes
-			.slice(18, 34)
-			.map((node, i) => new Ball(i, node));
+	setBalls() {
+		return this.nodes.slice(21, 37).map((node, i) => new Ball(i, node));
 	}
 
-	extractTable() {
-		this.table = this.nodes.slice();
+	setPockets() {
+		return this.nodes.slice(8, 14).map((node, i) => new Pocket(i, node));
 	}
 
-	extractCue() {
-		this.cue = this.nodes.slice();
+	setEdges() {
+		return this.nodes.slice(14, 20).map((node, i) => new Edge(i, node));
+	}
+
+	setTable() {
+		return new Table(this.balls, this.setPockets(), this.setEdges());
+	}
+
+	setCue() {
+		return new Cue(this.camera, this.nodes.at(0), 0);
 	}
 
 	coinFlip() {
@@ -84,11 +91,11 @@ export class Game {
 
 	break() {
 		if (this.pocketedBalls.any()) {
-			this.players.push(new Player(0, BallTypes.SOLID));
-			this.players.push(new Player(1, BallTypes.STRIPES));
-			this.gameState = GameStates.IN_PROGRESS;
+			this.players.push(new Player(0, BallType.SOLID));
+			this.players.push(new Player(1, BallType.STRIPES));
+			this.gameState = GameState.IN_PROGRESS;
 		} else {
-			this.gameState = GameStates.PLAYER_NOT_SET;
+			this.gameState = GameState.PLAYER_NOT_SET;
 		}
 	}
 
@@ -113,6 +120,8 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
+		this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
+		// this.camera.getComponentOfType(Transform).scale = [1 / 2, 1 / 2, 1 / 2];
 	}
 
 	render() {
