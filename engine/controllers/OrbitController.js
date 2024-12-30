@@ -1,4 +1,4 @@
-import { quat, vec3 } from "glm";
+import { quat, vec3, mat4 } from "glm";
 
 import { Transform } from "../core/Transform.js";
 
@@ -91,5 +91,13 @@ export class OrbitController {
 			[0, 0, this.distance],
 			this.rotation
 		);
+	}
+
+	setToBall(ball) {
+		const ballPosition = mat4.getTranslation(
+			vec3.create(),
+		    getGlobalModelMatrix(ball.node)
+		);
+		console.log(ballPosition)
 	}
 }
