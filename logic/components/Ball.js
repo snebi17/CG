@@ -10,29 +10,39 @@ export class Ball extends Component {
 		super(id, node);
 
 		this.init();
-		this.addLinearAnimator.bind(this);
+		this.node.addComponent(this);
 	}
 
 	init() {
 		this.color = BallMapping[this.id].color;
 		this.type = BallMapping[this.id].type;
 
+		this.wasHit = false;
+		this.isMoving = false;
+
 		this.transform = this.node.getComponentOfType(Transform);
-		this.velocity = [0, 0, 0];
+
+		let exp = 4;
+		this.velocity = [
+			Math.pow(10, -exp) * (Math.random() > 0.5 ? 1 : -1),
+			0,
+			0,
+		];
+
 		this.isPotted = false;
 	}
 
-	update(t, dt) {
-		const time = t % 1;
-		vec3.lerp(
-			this.transform.translation,
-			this.transform.translation,
-			[0, 1, 0, 1],
-			EasingFunction.bounceEaseIn
-		);
+	move(vec) {
+		this.transform.translation = vec;
 	}
 
-	addLinearAnimator() {
-		this.node.addComponent({ update });
+	update(t, dt) {
+		// if (this.wasHit) {
+		// 	this.move(this.velocity);
+		// 	this.isMoving = true;
+		// } else {
+		// 	this.isMoving = false;
+		// }
+		this.transform.translation[0] += this.velocity[0];
 	}
 }
