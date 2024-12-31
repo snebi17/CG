@@ -44,10 +44,6 @@ export class Game {
 	 */
 
 	init() {
-		// nodes are used for easier iteration through scene nodes
-		this.nodes = [];
-		this.scene.traverse((node) => this.nodes.push(node));
-
 		// gameState - used for state management
 		// gameType - used for initialization of player/players depending on mode of user choice
 		this.gameState = GameState.LOADING;
@@ -62,19 +58,27 @@ export class Game {
 
 		this.cue = this.setCue();
 		this.balls = this.setBalls();
+
 		this.table = this.setTable();
+		console.log(this.scene);
 	}
 
 	setBalls() {
-		return this.nodes.slice(21, 37).map((node, i) => new Ball(i, node));
+		return this.scene.children
+			.slice(21, 37)
+			.map((node, i) => new Ball(i, node));
 	}
 
 	setPockets() {
-		return this.nodes.slice(8, 14).map((node, i) => new Pocket(i, node));
+		return this.scene.children
+			.slice(8, 14)
+			.map((node, i) => new Pocket(i, node));
 	}
 
 	setEdges() {
-		return this.nodes.slice(14, 20).map((node, i) => new Edge(i, node));
+		return this.scene.children
+			.slice(14, 20)
+			.map((node, i) => new Edge(i, node));
 	}
 
 	setTable() {
@@ -82,7 +86,7 @@ export class Game {
 	}
 
 	setCue() {
-		return new Cue(this.camera, this.nodes.at(0), 0);
+		return new Cue(this.camera, this.scene.children.at(0), 0);
 	}
 
 	coinFlip() {
@@ -120,8 +124,7 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
-		this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
-		// this.camera.getComponentOfType(Transform).scale = [1 / 2, 1 / 2, 1 / 2];
+		// this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
 	}
 
 	render() {
