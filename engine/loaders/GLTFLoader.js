@@ -513,47 +513,48 @@ export class GLTFLoader {
 		return node;
 	}
 
-	loadNodes(nameOrIndex) {
-		const gltfSpecs = this.findByNameOrIndex(
-			this.gltf.nodes,
-			nameOrIndex,
-			true
-		);
+	// loadNodes(nameOrIndex) {
+	// 	const gltfSpecs = this.findByNameOrIndex(
+	// 		this.gltf.nodes,
+	// 		nameOrIndex,
+	// 		true
+	// 	);
 
-		let nodes = [];
+	// 	let nodes = [];
 
-		for (let gltfSpec of gltfSpecs) {
-			if (!gltfSpec) {
-				return null;
-			}
-			if (this.cache.has(gltfSpec)) {
-				return this.cache.get(gltfSpec);
-			}
+	// 	for (const gltfSpec of gltfSpecs) {
+	// 		if (!gltfSpec) {
+	// 			return null;
+	// 		}
+	// 		if (this.cache.has(gltfSpec)) {
+	// 			nodes.push(this.cache.get(gltfSpec));
+	// 			continue;
+	// 		}
 
-			const node = new Node();
+	// 		const node = new Node();
 
-			node.addComponent(new Transform(gltfSpec));
+	// 		node.addComponent(new Transform(gltfSpec));
 
-			if (gltfSpec.children) {
-				for (const childIndex of gltfSpec.children) {
-					node.addChild(this.loadNode(childIndex));
-				}
-			}
+	// 		if (gltfSpec.children) {
+	// 			for (const childIndex of gltfSpec.children) {
+	// 				node.addChild(this.loadNode(childIndex));
+	// 			}
+	// 		}
 
-			if (gltfSpec.camera !== undefined) {
-				node.addComponent(this.loadCamera(gltfSpec.camera));
-			}
+	// 		if (gltfSpec.camera !== undefined) {
+	// 			node.addComponent(this.loadCamera(gltfSpec.camera));
+	// 		}
 
-			if (gltfSpec.mesh !== undefined) {
-				node.addComponent(this.loadMesh(gltfSpec.mesh));
-			}
+	// 		if (gltfSpec.mesh !== undefined) {
+	// 			node.addComponent(this.loadMesh(gltfSpec.mesh));
+	// 		}
 
-			this.cache.set(gltfSpec, node);
-			nodes.push({ name: gltfSpec.name, node: node });
-		}
+	// 		this.cache.set(gltfSpec, node);
+	// 		nodes.push(gltfSpec);
+	// 	}
 
-		return nodes;
-	}
+	// 	return nodes;
+	// }
 
 	loadScene(nameOrIndex) {
 		const gltfSpec = this.findByNameOrIndex(this.gltf.scenes, nameOrIndex);

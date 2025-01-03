@@ -29,7 +29,6 @@ export class FirstPersonController {
 		this.maxSpeed = maxSpeed;
 		this.decay = decay;
 		this.pointerSensitivity = pointerSensitivity;
-		console.log(this.node);
 
 		this.initHandlers();
 	}
@@ -77,6 +76,8 @@ export class FirstPersonController {
 			vec3.sub(acc, acc, right);
 		}
 
+		if (this.keys["Space"]) {
+		}
 		// Update velocity based on acceleration.
 		vec3.scaleAndAdd(
 			this.velocity,
@@ -111,6 +112,8 @@ export class FirstPersonController {
 				this.velocity,
 				dt
 			);
+
+			// console.log(`[${this.pitch}, ${this.yaw}]`);
 
 			// Update rotation based on the Euler angles.
 			const rotation = quat.create();
