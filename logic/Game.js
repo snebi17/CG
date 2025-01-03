@@ -120,7 +120,6 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
-		this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
 		// this.camera.getComponentOfType(Transform).scale = [1 / 2, 1 / 2, 1 / 2];
 	}
 

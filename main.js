@@ -1,7 +1,9 @@
 import { UpdateSystem } from "./engine/systems/UpdateSystem.js";
-import { UnlitRenderer } from "../engine/renderers/UnlitRenderer.js";
+import { UnlitRenderer } from "./engine/renderers/UnlitRenderer.js";
 import { ResizeSystem } from "./engine/systems/ResizeSystem.js";
-import { GLTFLoader } from "../engine/loaders/GLTFLoader.js";
+import { GLTFLoader } from "./engine/loaders/GLTFLoader.js";
+import * as SceneUtils from "./engine/core/SceneUtils.js";
+import { Transform } from "./engine/core.js";
 
 import { Camera } from "engine/core.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
@@ -36,6 +38,10 @@ function resize({ displaySize: { width, height } }) {
 }
 
 const game = new Game(scene, camera, renderer);
+// console.log(SceneUtils.getGlobalModelMatrix(game.balls.at(0)));
+// console.log(game.balls.getComponentOfType(Transform));
+console.log(SceneUtils.getGlobalModelMatrix(game.balls.at(0).node));
+
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem(game).start();
