@@ -7,6 +7,8 @@ import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { Component } from "./components/Component.js";
 
+import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
+
 import { BallType, GameState } from "./common/Enums.js";
 
 import { Physics } from "./Physics.js";
@@ -20,7 +22,7 @@ class Player {
 }
 
 export class Game {
-	constructor(scene, camera, renderer) {
+	constructor(scene, camera, renderer, domElement) {
 		/**
 		 * scene - contains all scene nodes
 		 * camera - self explanatory
@@ -30,7 +32,9 @@ export class Game {
 		this.scene = scene;
 		this.camera = camera;
 		this.renderer = renderer;
-		this.physics = new Physics(this.scene);
+		this.domElement = domElement;
+
+		this.keys = {};
 
 		this.init();
 	}
@@ -60,38 +64,72 @@ export class Game {
 		this.players = null;
 		this.currentPlayer = -1;
 
-		this.cue = this.setCue();
-		this.balls = this.setBalls();
+		this.pocketedBalls = [];
 
-		this.table = this.setTable();
-		console.log(this.scene);
+		this.setComponents();
+
+		this.camera.addComponent(new FirstPersonController(this.camera, this.domElement));
+		this.physics = new Physics(this.scene);
+
+		this.initHandlers();
 	}
 
-	setBalls() {
-		return this.scene.children
+	initHandlers() {
+		this.keydownHandler = this.keydownHandler.bind(this);
+		this.keyupHandler = this.keyupHandler.bind(this);
+
+		const element = this.domElement;
+		const doc = element.ownerDocument;
+
+		doc.addEventListener("keydown", this.keydownHandler);
+		doc.addEventListener("keyup", this.keyupHandler);
+	}
+
+	setComponents() {
+		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
+
+		this.balls = this.scene.children
 			.slice(21, 37)
 			.map((node, i) => new Ball(i, node));
-	}
 
-	setPockets() {
-		return this.scene.children
+		this.pockets = this.scene.children
 			.slice(8, 14)
 			.map((node, i) => new Pocket(i, node));
-	}
 
-	setEdges() {
-		return this.scene.children
+		this.edges =  this.scene.children
 			.slice(14, 20)
 			.map((node, i) => new Edge(i, node));
 	}
 
-	setTable() {
-		return new Table(this.balls, this.setPockets(), this.setEdges());
+	resolvePocketing(ball) {
+		this.pockets.forEach(pocket => {
+			if (pocket.resolvePocketing(ball)) {
+				this.pocketedBalls.push(ball);
+			}
+		})
 	}
 
-	setCue() {
-		return new Cue(this.camera, this.scene.children.at(0), 0);
+	resolveCollision(ball) {
+		this.edges.forEach(edge => {
+			edge.resolveCollision(ball);
+		});
 	}
+
+	checkCollision() {
+		this.balls.forEach(ball => {
+			this.resolvePocketing(ball);
+			this.resolveCollision(ball);
+		});
+	}
+
+	keydownHandler(e) {
+		this.keys[e.code] = true;
+	}
+
+	keyupHandler(e) {
+		this.keys[e.code] = false;
+	}
+	
 
 	coinFlip() {
 		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
@@ -123,6 +161,10 @@ export class Game {
 	}
 
 	update(time, dt) {
+		if (this.keys["Space"]) {
+			console.log("Space");
+		}
+
 		this.scene.traverse((node) => {
 			for (const component of node.components) {
 				component.update?.(time, dt);

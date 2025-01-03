@@ -8,4 +8,9 @@ export class Pocket extends Component {
 		this.position = PocketMapping[id];
 		this.node.isStatic = true;
 	}
+
+	resolveCollision(ball) {
+		ball.isPocketed = true;
+		return true;
+	}
 }

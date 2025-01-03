@@ -1,6 +1,7 @@
 import {
 	calculateAxisAlignedBoundingBox,
 	mergeAxisAlignedBoundingBoxes,
+	getAxisAlignedBoundingBox
 } from "../../engine/core/MeshUtils.js";
 
 import { Model } from "../../engine/core.js";
@@ -25,5 +26,9 @@ export class Component {
 		);
 
 		this.node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+	}
+
+	getAxisAlignedBoundingBox() {
+		return getAxisAlignedBoundingBox(this.node);
 	}
 }

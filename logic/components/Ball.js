@@ -19,8 +19,9 @@ export class Ball extends Component {
 		this.wasHit = false;
 		this.isMoving = false;
 		this.transform = this.node.getComponentOfType(Transform);
-		this.initialVelocity = [0, 0];
-		this.isPotted = false;
+		this.velocity = vec3.fromValues(1, 0, 0);
+		this.deceleration = 0.05;
+		this.isPocketed = false;
 		this.node.isDynamic = true;
 	}
 
@@ -29,6 +30,25 @@ export class Ball extends Component {
 	}
 
 	update(t, dt) {
+		if (this.isPocketed) {
+			// if it's pocketed, apply animation for translateY * dt
+			// after a second, delete the ball
+			this.pocketAnimation(dt);
+		}
+		// vec3.scaleAndAdd(this.velocity, this.velocity, vec3.fromValues(-1, 0, 0), this.deceleration * dt);
+
+        // // If the velocity is very small, stop the ball
+        // if (vec3.length(this.velocity) < 0.001) {
+        //     this.velocity = vec3.create(); // Stop the ball
+        // }
+
+        // // Apply the velocity to move the ball
+        // const transform = this.node.getComponentOfType(Transform);
+        // if (transform) {
+        //     const movement = vec3.create();
+        //     vec3.scale(movement, this.velocity, dt); // Move the ball by the velocity over time
+        //     vec3.add(transform.translation, transform.translation, movement);
+        // }
 		// if (this.wasHit) {
 		// 	this.move(this.velocity);
 		// 	this.isMoving = true;
@@ -36,5 +56,13 @@ export class Ball extends Component {
 		// 	this.isMoving = false;
 		// }
 		// this.transform.translation[0] += this.velocity[0];
+	}
+
+	pocketAnimation(dt) {
+		this.transform.translation[1] *= dt;
+
+		if (dt > 1) {
+			this = null;
+		}
 	}
 }
