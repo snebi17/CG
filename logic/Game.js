@@ -5,8 +5,11 @@ import { Table } from "./components/Table.js";
 import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
+import { Component } from "./components/Component.js";
 
 import { BallType, GameState } from "./common/Enums.js";
+
+import { Physics } from "./Physics.js";
 
 class Player {
 	constructor(id, type) {
@@ -27,6 +30,7 @@ export class Game {
 		this.scene = scene;
 		this.camera = camera;
 		this.renderer = renderer;
+		this.physics = new Physics(this.scene);
 
 		this.init();
 	}
@@ -124,6 +128,8 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
+
+		// this.physics.update(time, dt);
 		// this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
 	}
 

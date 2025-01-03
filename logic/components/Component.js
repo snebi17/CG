@@ -1,16 +1,29 @@
-import * as MeshUtils from "../../engine/core/MeshUtils.js";
+import {
+	calculateAxisAlignedBoundingBox,
+	mergeAxisAlignedBoundingBoxes,
+} from "../../engine/core/MeshUtils.js";
+
+import { Model } from "../../engine/core.js";
 
 export class Component {
 	constructor(id, node) {
 		this.id = id;
 		this.node = node;
+
+		this.setAxisAlignedBoundingBox(node);
 	}
 
-	aabb() {
-		return MeshUtils.calculateAxisAlignedBoundingBox(this.node);
-	}
+	setAxisAlignedBoundingBox(node) {
+		this.model = node.getComponentOfType(Model);
 
-	merge(boxes) {
-		return MeshUtils.mergeAxisAlignedBoundingBoxes(boxes);
+		if (!this.model) {
+			return;
+		}
+
+		const boxes = this.model.primitives.map((primitive) =>
+			calculateAxisAlignedBoundingBox(primitive.mesh)
+		);
+
+		this.node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
 	}
 }

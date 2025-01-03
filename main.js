@@ -7,7 +7,12 @@ import { Camera } from "engine/core.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 // import { OrbitController } from "./engine/controllers/OrbitController.js";
 import { TurntableController } from "./engine/controllers/TurntableController.js";
+import {
+	calculateAxisAlignedBoundingBox,
+	mergeAxisAlignedBoundingBoxes,
+} from "../../engine/core/MeshUtils.js";
 // import { TouchController } from "./engine/controllers/TouchController.js";
+import { Model } from "./engine/core.js";
 
 import { Game } from "./logic/Game.js";
 
@@ -23,7 +28,28 @@ if (!scene) {
 	throw new Error("A default scene is required to run this example");
 }
 
+// const camera = scene.find((node) => {
+
+// 	const camera = node.getComponentOfType(Camera);
+// 	const model = camera.getComponentOfType(Model);
+
+// 	if (model) {
+// 		const boxes = model.primitives.map((primitive) =>
+// 			calculateAxisAlignedBoundingBox(primitive.mesh)
+// 		);
+
+// 		camera.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+// 	}
+// 	return camera;
+// });
+
 const camera = scene.find((node) => node.getComponentOfType(Camera));
+camera.isDynamic = true;
+
+loader.loadNode("Side").isStatic = true;
+loader.loadNode("Side.001").isStatic = true;
+loader.loadNode("Side.002").isStatic = true;
+loader.loadNode("Side.003").isStatic = true;
 
 if (!camera) {
 	throw new Error("A camera in the scene is require to run this example");
