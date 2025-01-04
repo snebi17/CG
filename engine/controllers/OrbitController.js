@@ -96,10 +96,7 @@ export class OrbitController {
 	}
 
 	setToBall(ball) {
-		const ballPosition = mat4.getTranslation(
-			vec3.create(),
-		    getGlobalViewMatrix(ball.node)
-		);
-		console.log(ballPosition)
+		const ballPosition = getGlobalViewMatrix(ball);
+		//this.node.position = ballPosition.translation;
 	}
 }

@@ -9,6 +9,8 @@ import { OrbitController } from "./engine/controllers/OrbitController.js";
 
 import { Game } from "./logic/Game.js";
 
+import { getGlobalModelMatrix } from "./engine/core/SceneUtils.js";
+
 const canvas = document.querySelector("canvas");
 const renderer = new UnlitRenderer(canvas);
 await renderer.initialize();
@@ -40,7 +42,8 @@ function resize({ displaySize: { width, height } }) {
 
 const game = new Game(scene, camera, renderer);
 
-controller.setToBall(game.cue);
+//console.log(getGlobalModelMatrix(game.balls.at(0).node));
+controller.setToBall(game.balls.at(0).node);
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem(game).start();
