@@ -10,8 +10,6 @@ import { Component } from "./components/Component.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 
 import { BallType, GameState } from "./common/Enums.js";
-
-import { Physics } from "./Physics.js";
 import { vec3 } from "../lib/glm.js";
 
 class Player {
@@ -23,7 +21,22 @@ class Player {
 }
 
 export class Game {
-	constructor(scene, camera, renderer, domElement) {
+	constructor(
+		scene,
+		camera,
+		renderer,
+		domElement,
+		{
+			gameState = GameState.HITTING,
+			gameType = null,
+			player = null,
+			players = null,
+			currentPlayer = -1,
+			pocketedBalls = [],
+			movingBalls = [],
+			keys = {},
+		} = {}
+	) {
 		/**
 		 * scene - contains all scene nodes
 		 * camera - self explanatory
@@ -35,9 +48,30 @@ export class Game {
 		this.renderer = renderer;
 		this.domElement = domElement;
 
-		this.keys = {};
+		// gameState - used for state management
+		// gameType - used for initialization of player/players depending on mode of user choice
+		this.gameState = gameState;
+		this.gameType = gameType;
 
-		this.init();
+		// player - player object if singleplayer
+		// players - array of players if multiplayer
+		// currentPlayer - used for switching players on each turn
+		this.player = player;
+		this.players = players;
+		this.currentPlayer = currentPlayer;
+
+		this.pocketedBalls = pocketedBalls;
+
+		this.keys = keys;
+
+		this.setComponents();
+
+		this.camera.addComponent(
+			new FirstPersonController(this.camera, this.domElement)
+		);
+		this.table = new Table(this.balls, this.edges, this.pockets);
+
+		this.initHandlers();
 	}
 
 	/**
@@ -52,31 +86,6 @@ export class Game {
 	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
 	 */
 
-	init() {
-		// gameState - used for state management
-		// gameType - used for initialization of player/players depending on mode of user choice
-		this.gameState = GameState.HITTING;
-		this.gameType = null;
-
-		// player - player object if singleplayer
-		// players - array of players if multiplayer
-		// currentPlayer - used for switching players on each turn
-		this.player = null;
-		this.players = null;
-		this.currentPlayer = -1;
-
-		this.pocketedBalls = [];
-
-		this.setComponents();
-
-		this.camera.addComponent(
-			new FirstPersonController(this.camera, this.domElement)
-		);
-		this.physics = new Physics();
-
-		this.initHandlers();
-	}
-
 	initHandlers() {
 		this.keydownHandler = this.keydownHandler.bind(this);
 		this.keyupHandler = this.keyupHandler.bind(this);
@@ -90,11 +99,12 @@ export class Game {
 
 	setComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
-		this.white = new Ball(0, this.scene.children.at(20));
 
 		this.balls = this.scene.children
-			.slice(22, 37)
-			.map((node, i) => new Ball(i + 1, node));
+			.slice(20, 36)
+			.map((node, i) => new Ball(i, node));
+
+		this.white = this.balls.at(0);
 
 		this.pockets = this.scene.children
 			.slice(8, 14)
@@ -133,6 +143,29 @@ export class Game {
 		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
 	}
 
+	checkForFaults() {
+		const faulPockets = this.pocketedBalls.filter(
+			(ball) => ball.type !== this.currentPlayer.type
+		);
+
+		if (faulPockets.length == 0) {
+			this.switchPlayer();
+		}
+
+		this.gameState = GameState.HITTING;
+	}
+
+	resolveCollision(time, dt) {
+		this.table.update(time, dt);
+
+		this.pocketedBalls = this.balls.filter((ball) => ball.isPocketed);
+
+		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
+		if (this.movingBalls.length == 0) {
+			this.checkForFaults();
+		}
+	}
+
 	start() {
 		// if (this.settings.gameType == GameTypes.SINGLEPLAYER) {
 		// 	this.player = new Player(0, BallTypes.BOTH);
@@ -144,8 +177,7 @@ export class Game {
 
 	update(time, dt) {
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
-			this.physics.update(time, dt);
-			this.camera.switchView();
+			this.resolveCollision(time, dt);
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
@@ -154,10 +186,10 @@ export class Game {
 		if (this.gameState == GameState.HITTING) {
 			if (this.keys["Space"]) {
 				this.white.hit(
-					vec3.fromValues(4, 0, 4),
-					vec3.fromValues(-1, 0, -1)
+					vec3.fromValues(1, 0, 0),
+					vec3.fromValues(-1, 0, 0)
 				);
-				this.gameState = this.gameState.RESOLVING_COLLISION;
+				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
 

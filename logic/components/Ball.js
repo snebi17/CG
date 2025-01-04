@@ -1,7 +1,6 @@
 import { Transform, Model } from "../../engine/core.js";
 import { vec3 } from "../../lib/glm.js";
 
-import { Physics } from "../Physics.js";
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
 
