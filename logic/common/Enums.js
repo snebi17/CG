@@ -26,11 +26,14 @@ const GameType = {
 
 const GameState = {
 	NONE: "none",
-	LOADING: "loading",
 	PLAYER_NOT_SET: "player not set",
+	BALL_IN_HAND: "ball in hand",
+
+	LOADING: "loading",
+	HITTING: "hitting",
+	RESOLVING_COLLISION: "resolving collision",
 	IN_PROGRESS: "in progress",
 	FINISHED: "finished",
-	BALL_IN_HAND: "ball in hand",
 };
 
 const PocketLocation = {

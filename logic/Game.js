@@ -5,8 +5,14 @@ import { Table } from "./components/Table.js";
 import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
+import { Component } from "./components/Component.js";
+
+import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 
 import { BallType, GameState } from "./common/Enums.js";
+
+import { Physics } from "./Physics.js";
+import { vec3 } from "../lib/glm.js";
 
 class Player {
 	constructor(id, type) {
@@ -17,7 +23,7 @@ class Player {
 }
 
 export class Game {
-	constructor(scene, camera, renderer) {
+	constructor(scene, camera, renderer, domElement) {
 		/**
 		 * scene - contains all scene nodes
 		 * camera - self explanatory
@@ -27,6 +33,9 @@ export class Game {
 		this.scene = scene;
 		this.camera = camera;
 		this.renderer = renderer;
+		this.domElement = domElement;
+
+		this.keys = {};
 
 		this.init();
 	}
@@ -46,7 +55,7 @@ export class Game {
 	init() {
 		// gameState - used for state management
 		// gameType - used for initialization of player/players depending on mode of user choice
-		this.gameState = GameState.LOADING;
+		this.gameState = GameState.HITTING;
 		this.gameType = null;
 
 		// player - player object if singleplayer
@@ -56,37 +65,52 @@ export class Game {
 		this.players = null;
 		this.currentPlayer = -1;
 
-		this.cue = this.setCue();
-		this.balls = this.setBalls();
+		this.pocketedBalls = [];
 
-		this.table = this.setTable();
-		console.log(this.scene);
+		this.setComponents();
+
+		this.camera.addComponent(
+			new FirstPersonController(this.camera, this.domElement)
+		);
+		this.physics = new Physics();
+
+		this.initHandlers();
 	}
 
-	setBalls() {
-		return this.scene.children
-			.slice(21, 37)
-			.map((node, i) => new Ball(i, node));
+	initHandlers() {
+		this.keydownHandler = this.keydownHandler.bind(this);
+		this.keyupHandler = this.keyupHandler.bind(this);
+
+		const element = this.domElement;
+		const doc = element.ownerDocument;
+
+		doc.addEventListener("keydown", this.keydownHandler);
+		doc.addEventListener("keyup", this.keyupHandler);
 	}
 
-	setPockets() {
-		return this.scene.children
+	setComponents() {
+		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
+		this.white = new Ball(0, this.scene.children.at(20));
+
+		this.balls = this.scene.children
+			.slice(22, 37)
+			.map((node, i) => new Ball(i + 1, node));
+
+		this.pockets = this.scene.children
 			.slice(8, 14)
 			.map((node, i) => new Pocket(i, node));
-	}
 
-	setEdges() {
-		return this.scene.children
+		this.edges = this.scene.children
 			.slice(14, 20)
 			.map((node, i) => new Edge(i, node));
 	}
 
-	setTable() {
-		return new Table(this.balls, this.setPockets(), this.setEdges());
+	keydownHandler(e) {
+		this.keys[e.code] = true;
 	}
 
-	setCue() {
-		return new Cue(this.camera, this.scene.children.at(0), 0);
+	keyupHandler(e) {
+		this.keys[e.code] = false;
 	}
 
 	coinFlip() {
@@ -119,12 +143,29 @@ export class Game {
 	}
 
 	update(time, dt) {
+		if (this.gameState == GameState.RESOLVING_COLLISION) {
+			this.physics.update(time, dt);
+			this.camera.switchView();
+		}
+
+		if (this.gameState == GameState.BALL_IN_HAND) {
+		}
+
+		if (this.gameState == GameState.HITTING) {
+			if (this.keys["Space"]) {
+				this.white.hit(
+					vec3.fromValues(1, 0, 0),
+					vec3.fromValues(-1, 0, 0)
+				);
+				this.gameState = this.gameState.RESOLVING_COLLISION;
+			}
+		}
+
 		this.scene.traverse((node) => {
 			for (const component of node.components) {
 				component.update?.(time, dt);
 			}
 		});
-		// this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
 	}
 
 	render() {

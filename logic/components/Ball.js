@@ -1,48 +1,84 @@
-import * as EasingFunction from "../../engine/animators/EasingFunctions.js";
-import { Transform } from "../../engine/core.js";
+import { Transform, Model } from "../../engine/core.js";
 import { vec3 } from "../../lib/glm.js";
 
+import { Physics } from "../Physics.js";
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
 
 export class Ball extends Component {
-	constructor(id, node) {
+	constructor(
+		id,
+		node,
+		{
+			velocity = vec3.fromValues(0, 0, 0),
+			direction = vec3.fromValues(0, 0, 0),
+			deceleration = 0.4,
+			isMoving = false,
+			isPocketed = false,
+		} = {}
+	) {
 		super(id, node);
 
 		this.init();
-		this.node.addComponent(this);
+
+		this.velocity = velocity;
+		this.direction = direction;
+		this.deceleration = deceleration;
+		this.isMoving = isMoving;
+		this.isPocketed = isPocketed;
 	}
 
 	init() {
 		this.color = BallMapping[this.id].color;
 		this.type = BallMapping[this.id].type;
 
-		this.wasHit = false;
-		this.isMoving = false;
-
 		this.transform = this.node.getComponentOfType(Transform);
-
-		let exp = 4;
-		this.velocity = [
-			Math.pow(10, -exp) * (Math.random() > 0.5 ? 1 : -1),
-			0,
-			0,
-		];
-
-		this.isPotted = false;
+		this.node.isDynamic = true;
+		this.node.addComponent(this);
 	}
 
-	move(vec) {
-		this.transform.translation = vec;
+	hit(direction, velocity) {
+		this.direction = direction;
+		this.velocity = velocity;
+		this.isMoving = true;
+	}
+
+	move(dt) {
+		if (vec3.length(this.velocity) < 0.01) {
+			this.isMoving = false;
+			return;
+		}
+
+		vec3.scaleAndAdd(
+			this.velocity,
+			this.velocity,
+			this.direction,
+			this.deceleration * dt
+		);
+
+		const movement = vec3.create();
+		vec3.scale(movement, this.velocity, dt);
+		vec3.add(
+			this.transform.translation,
+			this.transform.translation,
+			movement
+		);
 	}
 
 	update(t, dt) {
-		// if (this.wasHit) {
-		// 	this.move(this.velocity);
-		// 	this.isMoving = true;
-		// } else {
-		// 	this.isMoving = false;
-		// }
-		this.transform.translation[0] += this.velocity[0];
+		if (this.isPocketed) {
+			// if it's pocketed, apply animation for translateY * dt
+			// after a second, delete the ball
+			this.pocketAnimation(dt);
+		}
+
+		if (this.isMoving) {
+			this.move(dt);
+		}
+	}
+
+	pocketAnimation(dt) {
+		this.transform.translation[1] -= dt;
+		console.log(this.transform.translation);
 	}
 }

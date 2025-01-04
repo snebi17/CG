@@ -1,4 +1,6 @@
+
 import { Physics } from "../Physics.js";
+
 
 export class BallPhysics extends Physics {
 	constructor(ball) {
@@ -7,7 +9,7 @@ export class BallPhysics extends Physics {
 		this.acceleration = [0, 0, 0];
 	}
 
-	move() {
+	applyMovement() {
 		this.ball.position = this.ball.position.map(
 			(pos, index) => pos + this.velocity[index]
 		);

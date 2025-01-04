@@ -9,7 +9,28 @@ export class Table {
 		this.pocketedBalls = [];
 	}
 
-	resolveCollision(ball) {}
+	/**
+	 * @param {*} ball - ball that's moving
+	 * @returns true if ball has collided with another ball, false otherwise
+	 * @todo optimize that it doesn't check for all the balls, just the balls in its direction
+	 */
+	checkCollision(ball) {
+		this.balls.forEach((b) => {
+			if (b !== ball && b.intersects(ball)) {
+				return true;
+			}
+		});
+
+		return false;
+	}
+
+	/**
+	 * @param {*} ball
+	 */
+	resolveCollision(ball) {
+		if (this.checkCollision(ball)) {
+		}
+	}
 
 	pocketBall(ball) {
 		this.activeBalls.filter((b) => b !== ball);
