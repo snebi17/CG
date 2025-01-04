@@ -154,8 +154,8 @@ export class Game {
 		if (this.gameState == GameState.HITTING) {
 			if (this.keys["Space"]) {
 				this.white.hit(
-					vec3.fromValues(1, 0, 0),
-					vec3.fromValues(-1, 0, 0)
+					vec3.fromValues(4, 0, 4),
+					vec3.fromValues(-1, 0, -1)
 				);
 				this.gameState = this.gameState.RESOLVING_COLLISION;
 			}

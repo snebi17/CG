@@ -8,7 +8,7 @@ export class Physics {
 	update(t, dt) {
 		this.scene.forEach((node) => {
 			if (node.isDynamic) {
-				this.scene.traverse((other) => {
+				this.scene.forEach((other) => {
 					if (node !== other && other.isStatic) {
 						this.resolveCollision(node, other);
 					}
