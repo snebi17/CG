@@ -1,7 +1,6 @@
 import {
 	calculateAxisAlignedBoundingBox,
 	mergeAxisAlignedBoundingBoxes,
-	getAxisAlignedBoundingBox
 } from "../../engine/core/MeshUtils.js";
 
 import { Model } from "../../engine/core.js";
@@ -11,11 +10,11 @@ export class Component {
 		this.id = id;
 		this.node = node;
 
-		this.setAxisAlignedBoundingBox(node);
+		this.setAxisAlignedBoundingBox();
 	}
 
-	setAxisAlignedBoundingBox(node) {
-		this.model = node.getComponentOfType(Model);
+	setAxisAlignedBoundingBox() {
+		this.model = this.node.getComponentOfType(Model);
 
 		if (!this.model) {
 			return;
@@ -26,9 +25,5 @@ export class Component {
 		);
 
 		this.node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
-	}
-
-	getAxisAlignedBoundingBox() {
-		return getAxisAlignedBoundingBox(this.node);
 	}
 }

@@ -1,10 +1,12 @@
+import { Transform } from "../engine/core.js";
+
 export class Physics {
 	constructor(scene) {
 		this.scene = scene;
 	}
 
 	update(t, dt) {
-		this.scene.traverse((node) => {
+		this.scene.forEach((node) => {
 			if (node.isDynamic) {
 				this.scene.traverse((other) => {
 					if (node !== other && other.isStatic) {

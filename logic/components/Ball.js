@@ -1,32 +1,68 @@
-import * as EasingFunction from "../../engine/animators/EasingFunctions.js";
 import { Transform, Model } from "../../engine/core.js";
 import { vec3 } from "../../lib/glm.js";
 
+import { Physics } from "../Physics.js";
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
 
 export class Ball extends Component {
-	constructor(id, node) {
+	constructor(
+		id,
+		node,
+		{
+			velocity = vec3.fromValues(0, 0, 0),
+			direction = vec3.fromValues(0, 0, 0),
+			deceleration = 0.4,
+			isMoving = false,
+			isPocketed = false,
+		} = {}
+	) {
 		super(id, node);
 
 		this.init();
-		this.node.addComponent(this);
+
+		this.velocity = velocity;
+		this.direction = direction;
+		this.deceleration = deceleration;
+		this.isMoving = isMoving;
+		this.isPocketed = isPocketed;
 	}
 
 	init() {
 		this.color = BallMapping[this.id].color;
 		this.type = BallMapping[this.id].type;
-		this.wasHit = false;
-		this.isMoving = false;
+
 		this.transform = this.node.getComponentOfType(Transform);
-		this.velocity = vec3.fromValues(1, 0, 0);
-		this.deceleration = 0.05;
-		this.isPocketed = false;
 		this.node.isDynamic = true;
+		this.node.addComponent(this);
 	}
 
-	move(vec) {
-		// this.transform.translation = vec;
+	hit(direction, velocity) {
+		this.direction = direction;
+		this.velocity = velocity;
+		this.isMoving = true;
+	}
+
+	move(dt) {
+		if (vec3.length(this.velocity) < 0.01) {
+			this.isMoving = false;
+			return;
+		}
+
+		vec3.scaleAndAdd(
+			this.velocity,
+			this.velocity,
+			this.direction,
+			this.deceleration * dt
+		);
+
+		const movement = vec3.create();
+		vec3.scale(movement, this.velocity, dt);
+		vec3.add(
+			this.transform.translation,
+			this.transform.translation,
+			movement
+		);
 	}
 
 	update(t, dt) {
@@ -35,34 +71,14 @@ export class Ball extends Component {
 			// after a second, delete the ball
 			this.pocketAnimation(dt);
 		}
-		// vec3.scaleAndAdd(this.velocity, this.velocity, vec3.fromValues(-1, 0, 0), this.deceleration * dt);
 
-        // // If the velocity is very small, stop the ball
-        // if (vec3.length(this.velocity) < 0.001) {
-        //     this.velocity = vec3.create(); // Stop the ball
-        // }
-
-        // // Apply the velocity to move the ball
-        // const transform = this.node.getComponentOfType(Transform);
-        // if (transform) {
-        //     const movement = vec3.create();
-        //     vec3.scale(movement, this.velocity, dt); // Move the ball by the velocity over time
-        //     vec3.add(transform.translation, transform.translation, movement);
-        // }
-		// if (this.wasHit) {
-		// 	this.move(this.velocity);
-		// 	this.isMoving = true;
-		// } else {
-		// 	this.isMoving = false;
-		// }
-		// this.transform.translation[0] += this.velocity[0];
+		if (this.isMoving) {
+			this.move(dt);
+		}
 	}
 
 	pocketAnimation(dt) {
-		this.transform.translation[1] *= dt;
-
-		if (dt > 1) {
-			this = null;
-		}
+		this.transform.translation[1] -= dt;
+		console.log(this.transform.translation);
 	}
 }

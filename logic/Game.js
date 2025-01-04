@@ -12,6 +12,7 @@ import { FirstPersonController } from "../engine/controllers/FirstPersonControll
 import { BallType, GameState } from "./common/Enums.js";
 
 import { Physics } from "./Physics.js";
+import { vec3 } from "../lib/glm.js";
 
 class Player {
 	constructor(id, type) {
@@ -54,7 +55,7 @@ export class Game {
 	init() {
 		// gameState - used for state management
 		// gameType - used for initialization of player/players depending on mode of user choice
-		this.gameState = GameState.LOADING;
+		this.gameState = GameState.HITTING;
 		this.gameType = null;
 
 		// player - player object if singleplayer
@@ -68,8 +69,10 @@ export class Game {
 
 		this.setComponents();
 
-		this.camera.addComponent(new FirstPersonController(this.camera, this.domElement));
-		this.physics = new Physics(this.scene);
+		this.camera.addComponent(
+			new FirstPersonController(this.camera, this.domElement)
+		);
+		this.physics = new Physics();
 
 		this.initHandlers();
 	}
@@ -87,39 +90,19 @@ export class Game {
 
 	setComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
+		this.white = new Ball(0, this.scene.children.at(20));
 
 		this.balls = this.scene.children
-			.slice(21, 37)
-			.map((node, i) => new Ball(i, node));
+			.slice(22, 37)
+			.map((node, i) => new Ball(i + 1, node));
 
 		this.pockets = this.scene.children
 			.slice(8, 14)
 			.map((node, i) => new Pocket(i, node));
 
-		this.edges =  this.scene.children
+		this.edges = this.scene.children
 			.slice(14, 20)
 			.map((node, i) => new Edge(i, node));
-	}
-
-	resolvePocketing(ball) {
-		this.pockets.forEach(pocket => {
-			if (pocket.resolvePocketing(ball)) {
-				this.pocketedBalls.push(ball);
-			}
-		})
-	}
-
-	resolveCollision(ball) {
-		this.edges.forEach(edge => {
-			edge.resolveCollision(ball);
-		});
-	}
-
-	checkCollision() {
-		this.balls.forEach(ball => {
-			this.resolvePocketing(ball);
-			this.resolveCollision(ball);
-		});
 	}
 
 	keydownHandler(e) {
@@ -129,7 +112,6 @@ export class Game {
 	keyupHandler(e) {
 		this.keys[e.code] = false;
 	}
-	
 
 	coinFlip() {
 		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
@@ -161,8 +143,22 @@ export class Game {
 	}
 
 	update(time, dt) {
-		if (this.keys["Space"]) {
-			console.log("Space");
+		if (this.gameState == GameState.RESOLVING_COLLISION) {
+			this.physics.update(time, dt);
+			this.camera.switchView();
+		}
+
+		if (this.gameState == GameState.BALL_IN_HAND) {
+		}
+
+		if (this.gameState == GameState.HITTING) {
+			if (this.keys["Space"]) {
+				this.white.hit(
+					vec3.fromValues(1, 0, 0),
+					vec3.fromValues(-1, 0, 0)
+				);
+				this.gameState = this.gameState.RESOLVING_COLLISION;
+			}
 		}
 
 		this.scene.traverse((node) => {
@@ -170,9 +166,6 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
-
-		// this.physics.update(time, dt);
-		// this.camera.getComponentOfType(Transform).translation = [1.7, 1.25, 0];
 	}
 
 	render() {
