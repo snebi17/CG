@@ -32,6 +32,14 @@ export class Ball extends Component {
 		this.type = BallMapping[this.id].type;
 
 		this.transform = this.node.getComponentOfType(Transform);
+
+		const { min, max } = this.node.aabb;
+		const x = (max[0] + min[0]) / 2;
+		const y = (max[1] + min[1]) / 2;
+		const z = (max[2] + min[2]) / 2;
+
+		this.center = vec3.fromValues(x, y, z);
+		this.radius = max[0] - min[0];
 		this.node.isDynamic = true;
 		this.node.addComponent(this);
 	}

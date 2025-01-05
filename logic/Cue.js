@@ -6,13 +6,12 @@ export class Cue {
 		this.camera = camera;
 		this.node = node;
 		// this.angle = angle;
+
+		this.transform = this.node.getComponentOfType(Transform);
 		this.force = 0;
 	}
 
 	update(dt, t) {
-		const translate = this.node.getComponentOfType(Transform).translate;
-		const rotation = this.node.getComponentOfType(Transform).rotation;
-
-		this.camera.getComponentOfType(Transform).rotation;
+		const cameraTransform = this.camera.getComponentOfType(Transform);
 	}
 }

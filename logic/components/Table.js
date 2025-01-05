@@ -20,6 +20,10 @@ export class Table {
 
 	update(t, dt) {
 		this.balls.forEach((ball) => {
+			if (ball.isMoving) {
+				this.movingBalls.push(ball);
+			}
+
 			this.edges.forEach((edge) => {
 				this.handleBounce(ball, edge);
 			});
@@ -27,16 +31,6 @@ export class Table {
 				this.handlePocketing(ball, pocket);
 			});
 		});
-
-		// this.scene.forEach((entity) => {
-		// 	if (entity.node.isDynamic) {
-		// 		this.scene.forEach((otherEntity) => {
-		// 			if (entity !== otherEntity && otherEntity.node.isStatic) {
-		// 				this.resolveCollision(entity.node, otherEntity.node);
-		// 			}
-		// 		});
-		// 	}
-		// });
 	}
 
 	handlePocketing(ball, pocket) {
@@ -48,10 +42,18 @@ export class Table {
 	handleBounce(ball, other) {
 		if (this.resolveCollision(ball.node, other.node)) {
 			if (other instanceof Ball) {
-				// calculate kinetic energy and momentum the ball gives to another ball(s) when collision occurs
+				/**
+				 * Ball to ball collision
+				 * Calculate kinetic energy and momentum the ball gives to another ball when collision occurs
+				 */
+				ball.move();
+				other.move();
 			} else {
-				// calculate velocity and direction in which the ball should move after collision with an edge
-				// ball.move();
+				/**
+				 * Ball to edge collision
+				 * Calculate velocity and direction in which the ball should move after collision with an edge
+				 */
+				ball.move();
 			}
 		}
 	}
