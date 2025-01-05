@@ -1,5 +1,6 @@
 import { Transform, Model } from "../../engine/core.js";
 import { vec3 } from "../../lib/glm.js";
+import { getGlobalModelMatrix, getLocalModelMatrix, getGlobalViewMatrix, getLocalViewMatrix, getProjectionMatrix} from "../../engine/core/SceneUtils.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
@@ -31,8 +32,6 @@ export class Ball extends Component {
 		this.color = BallMapping[this.id].color;
 		this.type = BallMapping[this.id].type;
 
-		this.transform = this.node.getComponentOfType(Transform);
-
 		const { min, max } = this.node.aabb;
 		const x = (max[0] + min[0]) / 2;
 		const y = (max[1] + min[1]) / 2;
@@ -51,6 +50,10 @@ export class Ball extends Component {
 	}
 
 	move(dt) {
+		if (dt == undefined) {
+			return;
+		}
+
 		if (vec3.length(this.velocity) < 0.01) {
 			this.isMoving = false;
 			return;
@@ -70,6 +73,8 @@ export class Ball extends Component {
 			this.transform.translation,
 			movement
 		);
+
+		console.log(this.model.primitives[0].mesh.vertices[0].position);
 	}
 
 	update(t, dt) {

@@ -22,10 +22,10 @@ class Player {
 
 export class Game {
 	/**
-	 * @param {*} scene the scene containing child nodes
-	 * @param {*} camera camera used to track the cue ball
-	 * @param {*} renderer renders the updated scene
-	 * @param {*} domElement DOM element that gets passed into input controller
+	 * @param {Node} scene the scene containing child nodes
+	 * @param {Camera} camera camera used to track the cue ball
+	 * @param {UnlitRenderer} renderer renders the updated scene
+	 * @param {HTMLElement} domElement DOM element that gets passed into input controller
 	 * @param {*} args arguments for tracking key objects in the game
 	 */
 	constructor(
@@ -72,15 +72,12 @@ export class Game {
 		);
 
 		this.table = new Table(this.balls, this.edges, this.pockets);
-		console.log(this.camera.getComponentOfType(Transform));
-		console.log(this.white);
 
-		this.camera.getComponentOfType(Transform).translation =
-			this.white.center;
+		// const transform = this.camera.getComponentOfType(Transform);
+		// transform.matrix = this.white.node.getComponentOfType(Transform).matrix;
+		// transform.translation = this.white.center;
+		// transform.translation[1]++;
 
-		this.camera.getComponentOfType(Transform).translation[0] += 1;
-		this.camera.getComponentOfType(Transform).translation[1] = 1.2;
-		this.camera.getComponentOfType(Transform).translation[2] += 1;
 		this.initHandlers();
 	}
 
@@ -117,11 +114,11 @@ export class Game {
 		this.white = this.balls.at(0);
 
 		this.pockets = this.scene.children
-			.slice(8, 14)
+			.slice(7, 14)
 			.map((node, i) => new Pocket(i, node));
 
 		this.edges = this.scene.children
-			.slice(14, 20)
+			.slice(14, 19)
 			.map((node, i) => new Edge(i, node));
 	}
 
@@ -155,8 +152,8 @@ export class Game {
 			if (this.keys["Space"]) {
 				console.log("Space");
 				this.white.hit(
-					vec3.fromValues(1, 0, 0),
-					vec3.fromValues(-1, 0, 0)
+					vec3.fromValues(-2, 0, -2),
+					vec3.fromValues(2, 0, 2)
 				);
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
@@ -179,6 +176,10 @@ export class Game {
 
 	break() {
 		if (this.keys["Space"]) {
+			this.white.hit(
+				vec3.fromValues(-2, 0, -2),
+					vec3.fromValues(2, 0, 2)
+			);
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
 	}
@@ -203,7 +204,7 @@ export class Game {
 		// 	this.switchPlayer();
 		// }
 
-		this.gameState = GameState.HITTING;
+		this.gameState = GameState.IN_PROGRESS;
 	}
 
 	resolveCollision(time, dt) {

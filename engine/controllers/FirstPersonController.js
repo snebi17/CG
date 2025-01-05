@@ -139,6 +139,7 @@ export class FirstPersonController {
 
 	keydownHandler(e) {
 		this.keys[e.code] = true;
+		// console.log(this.node.getComponentOfType(Transform).matrix);
 	}
 
 	keyupHandler(e) {
