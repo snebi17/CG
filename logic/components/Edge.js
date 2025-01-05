@@ -6,4 +6,8 @@ export class Edge extends Component {
 
 		this.node.isStatic = true;
 	}
+
+	resolveCollision(ball) {
+		
+	}
 }

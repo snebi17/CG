@@ -10,7 +10,9 @@ export class Pocket extends Component {
 	}
 
 	resolveCollision(ball) {
-		ball.isPocketed = true;
-		return true;
+		if (ball.node.aabb < this.node.aabb) {
+			ball.isPocketed = true;
+			return true;
+		}
 	}
 }
