@@ -21,6 +21,13 @@ class Player {
 }
 
 export class Game {
+	/**
+	 * @param {*} scene the scene containing child nodes
+	 * @param {*} camera camera used to track the cue ball
+	 * @param {*} renderer renders the updated scene
+	 * @param {*} domElement DOM element that gets passed into input controller
+	 * @param {*} args arguments for tracking key objects in the game
+	 */
 	constructor(
 		scene,
 		camera,
@@ -37,12 +44,6 @@ export class Game {
 			keys = {},
 		} = {}
 	) {
-		/**
-		 * scene - contains all scene nodes
-		 * camera - self explanatory
-		 * renderer - renders the scene to canvas
-		 */
-
 		this.scene = scene;
 		this.camera = camera;
 		this.renderer = renderer;
@@ -69,8 +70,17 @@ export class Game {
 		this.camera.addComponent(
 			new FirstPersonController(this.camera, this.domElement)
 		);
-		this.table = new Table(this.balls, this.edges, this.pockets);
 
+		this.table = new Table(this.balls, this.edges, this.pockets);
+		console.log(this.camera.getComponentOfType(Transform));
+		console.log(this.white);
+
+		this.camera.getComponentOfType(Transform).translation =
+			this.white.center;
+
+		this.camera.getComponentOfType(Transform).translation[0] += 1;
+		this.camera.getComponentOfType(Transform).translation[1] = 1.2;
+		this.camera.getComponentOfType(Transform).translation[2] += 1;
 		this.initHandlers();
 	}
 
@@ -123,68 +133,27 @@ export class Game {
 		this.keys[e.code] = false;
 	}
 
-	coinFlip() {
-		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
-	}
-
-	break() {
-		if (this.pocketedBalls.any()) {
-			this.players.push(new Player(0, BallType.SOLID));
-			this.players.push(new Player(1, BallType.STRIPES));
-			this.gameState = GameState.IN_PROGRESS;
-		} else {
-			this.gameState = GameState.PLAYER_NOT_SET;
-		}
-	}
-
-	setWhite() {}
-
-	switchPlayer() {
-		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
-	}
-
-	checkForFaults() {
-		const faulPockets = this.pocketedBalls.filter(
-			(ball) => ball.type !== this.currentPlayer.type
-		);
-
-		if (faulPockets.length == 0) {
-			this.switchPlayer();
-		}
-
-		this.gameState = GameState.HITTING;
-	}
-
-	resolveCollision(time, dt) {
-		this.table.update(time, dt);
-
-		this.pocketedBalls = this.balls.filter((ball) => ball.isPocketed);
-
-		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
-		if (this.movingBalls.length == 0) {
-			this.checkForFaults();
-		}
-	}
-
 	start() {
-		// if (this.settings.gameType == GameTypes.SINGLEPLAYER) {
-		// 	this.player = new Player(0, BallTypes.BOTH);
-		// } else {
-		// 	this.coinFlip();
-		// 	this.break();
-		// }
+		this.coinFlip();
+		this.gameState = GameState.STARTED;
 	}
 
 	update(time, dt) {
+		if (this.gameState == GameState.STARTED) {
+			this.break();
+		}
+
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.resolveCollision(time, dt);
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
+			this.setCueBall();
 		}
 
-		if (this.gameState == GameState.HITTING) {
+		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
+				console.log("Space");
 				this.white.hit(
 					vec3.fromValues(1, 0, 0),
 					vec3.fromValues(-1, 0, 0)
@@ -202,5 +171,49 @@ export class Game {
 
 	render() {
 		this.renderer.render(this.scene, this.camera);
+	}
+
+	coinFlip() {
+		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
+	}
+
+	break() {
+		if (this.keys["Space"]) {
+			this.gameState = GameState.RESOLVING_COLLISION;
+		}
+	}
+
+	setCueBall() {}
+
+	switchPlayer() {
+		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
+	}
+
+	checkForFaults() {
+		const pocketedBalls = this.table.pocketedBalls.filter(
+			(ball) => ball.type != this.currentPlayer.type
+		);
+		if (pocketedBalls.length == 0) {
+		}
+		// const faulPockets = this.pocketedBalls.filter(
+		// 	(ball) => ball.type !== this.currentPlayer.type
+		// );
+
+		// if (faulPockets.length == 0) {
+		// 	this.switchPlayer();
+		// }
+
+		this.gameState = GameState.HITTING;
+	}
+
+	resolveCollision(time, dt) {
+		this.table.update(time, dt);
+
+		this.pocketedBalls = this.balls.filter((ball) => ball.isPocketed);
+
+		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
+		if (this.movingBalls.length == 0) {
+			this.checkForFaults();
+		}
 	}
 }

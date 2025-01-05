@@ -26,12 +26,10 @@ const GameType = {
 
 const GameState = {
 	NONE: "none",
-	PLAYER_NOT_SET: "player not set",
-	BALL_IN_HAND: "ball in hand",
 
-	LOADING: "loading",
-	HITTING: "hitting",
+	STARTED: "started",
 	RESOLVING_COLLISION: "resolving collision",
+	BALL_IN_HAND: "ball in hand",
 	IN_PROGRESS: "in progress",
 	FINISHED: "finished",
 };
