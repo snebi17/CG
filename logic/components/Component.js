@@ -15,7 +15,6 @@ export class Component {
 
 		this.setAxisAlignedBoundingBox();
 		this.setCenter();
-
 	}
 
 	setAxisAlignedBoundingBox() {

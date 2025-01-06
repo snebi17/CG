@@ -1,6 +1,12 @@
 import { Transform, Model } from "../../engine/core.js";
-import { vec3 } from "../../lib/glm.js";
-import { getGlobalModelMatrix, getLocalModelMatrix, getGlobalViewMatrix, getLocalViewMatrix, getProjectionMatrix} from "../../engine/core/SceneUtils.js";
+import { vec3, mat4 } from "../../lib/glm.js";
+import {
+	getGlobalModelMatrix,
+	getLocalModelMatrix,
+	getGlobalViewMatrix,
+	getLocalViewMatrix,
+	getProjectionMatrix,
+} from "../../engine/core/SceneUtils.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
@@ -15,12 +21,14 @@ export class Ball extends Component {
 			deceleration = 0.4,
 			isMoving = false,
 			isPocketed = false,
+			position = vec3.fromValues(0, 0, 0),
 		} = {}
 	) {
 		super(id, node);
 
 		this.init();
 
+		this.position = position;
 		this.velocity = velocity;
 		this.direction = direction;
 		this.deceleration = deceleration;
@@ -49,7 +57,12 @@ export class Ball extends Component {
 		this.isMoving = true;
 	}
 
-	move(dt) {
+	move(dt, modelMatrix = mat4.create()) {
+		// const localMatrix = getLocalModelMatrix(this.node);
+		// modelMatrix = mat4.multiply(mat4.create(), modelMatrix, localMatrix);
+		// const normalMatrix = mat4.normalFromMat4(mat4.create(), modelMatrix);
+		// console.log(normalMatrix);
+
 		if (dt == undefined) {
 			return;
 		}
@@ -67,17 +80,17 @@ export class Ball extends Component {
 		);
 
 		const movement = vec3.create();
-		vec3.scale(movement, this.velocity, dt);
-		vec3.add(
-			this.transform.translation,
-			this.transform.translation,
-			movement
-		);
 
-		console.log(this.model.primitives[0].mesh.vertices[0].position);
+		const transform = this.node.getComponentOfType(Transform);
+		vec3.scale(movement, this.velocity, dt);
+		vec3.add(transform.translation, transform.translation, movement);
+
+		console.log(transform.matrix);
+		// console.log(this.model.primitives[0].mesh.vertices[0].position);
+		console.log(this.normalMatrix);
 	}
 
-	update(t, dt) {
+	update(t, dt, modelMatrix = mat4.create()) {
 		if (this.isPocketed) {
 			// if it's pocketed, apply animation for translateY * dt
 			// after a second, delete the ball
@@ -87,6 +100,10 @@ export class Ball extends Component {
 		if (this.isMoving) {
 			this.move(dt);
 		}
+
+		const localMatrix = getLocalModelMatrix(this.node);
+		modelMatrix = mat4.multiply(mat4.create(), modelMatrix, localMatrix);
+		this.normalMatrix = mat4.normalFromMat4(mat4.create(), modelMatrix);
 	}
 
 	pocketAnimation(dt) {
