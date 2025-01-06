@@ -1,12 +1,5 @@
 import { Transform, Model } from "../../engine/core.js";
 import { vec3, mat4 } from "../../lib/glm.js";
-import {
-	getGlobalModelMatrix,
-	getLocalModelMatrix,
-	getGlobalViewMatrix,
-	getLocalViewMatrix,
-	getProjectionMatrix,
-} from "../../engine/core/SceneUtils.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
@@ -16,12 +9,12 @@ export class Ball extends Component {
 		id,
 		node,
 		{
-			velocity = vec3.fromValues(0, 0, 0),
-			direction = vec3.fromValues(0, 0, 0),
+			velocity = vec3.create(),
+			direction = vec3.create(),
 			deceleration = 0.4,
 			isMoving = false,
 			isPocketed = false,
-			position = vec3.fromValues(0, 0, 0),
+			position = vec3.create(),
 		} = {}
 	) {
 		super(id, node);
@@ -40,34 +33,28 @@ export class Ball extends Component {
 		this.color = BallMapping[this.id].color;
 		this.type = BallMapping[this.id].type;
 
-		const { min, max } = this.node.aabb;
-		const x = (max[0] + min[0]) / 2;
-		const y = (max[1] + min[1]) / 2;
-		const z = (max[2] + min[2]) / 2;
-
-		this.center = vec3.fromValues(x, y, z);
-		this.radius = max[0] - min[0];
 		this.node.isDynamic = true;
 		this.node.addComponent(this);
 	}
 
-	hit(direction, velocity) {
-		this.direction = direction;
-		this.velocity = velocity;
+	hit(velocity = vec3.create(), direction = vec3.create()) {
+		vec3.random(this.velocity);
+		vec3.random(this.direction);
+		this.velocity[1] = 0;
+		this.direction[1] = 0;
+
+		console.log(this.velocity)
+		console.log(this.direction)
 		this.isMoving = true;
 	}
 
-	move(dt, modelMatrix = mat4.create()) {
-		// const localMatrix = getLocalModelMatrix(this.node);
-		// modelMatrix = mat4.multiply(mat4.create(), modelMatrix, localMatrix);
-		// const normalMatrix = mat4.normalFromMat4(mat4.create(), modelMatrix);
-		// console.log(normalMatrix);
-
+	move(dt) {
 		if (dt == undefined) {
 			return;
 		}
 
 		if (vec3.length(this.velocity) < 0.01) {
+			this.velocity = vec3.create();
 			this.isMoving = false;
 			return;
 		}
@@ -80,17 +67,13 @@ export class Ball extends Component {
 		);
 
 		const movement = vec3.create();
-
 		const transform = this.node.getComponentOfType(Transform);
+
 		vec3.scale(movement, this.velocity, dt);
 		vec3.add(transform.translation, transform.translation, movement);
-
-		console.log(transform.matrix);
-		// console.log(this.model.primitives[0].mesh.vertices[0].position);
-		console.log(this.normalMatrix);
 	}
 
-	update(t, dt, modelMatrix = mat4.create()) {
+	update(t, dt) {
 		if (this.isPocketed) {
 			// if it's pocketed, apply animation for translateY * dt
 			// after a second, delete the ball
@@ -100,10 +83,6 @@ export class Ball extends Component {
 		if (this.isMoving) {
 			this.move(dt);
 		}
-
-		const localMatrix = getLocalModelMatrix(this.node);
-		modelMatrix = mat4.multiply(mat4.create(), modelMatrix, localMatrix);
-		this.normalMatrix = mat4.normalFromMat4(mat4.create(), modelMatrix);
 	}
 
 	pocketAnimation(dt) {

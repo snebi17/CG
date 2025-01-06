@@ -151,10 +151,7 @@ export class Game {
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
 				console.log("Space");
-				this.white.hit(
-					vec3.fromValues(-2, 0, -2),
-					vec3.fromValues(2, 0, 2)
-				);
+				this.white.hit();
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
@@ -176,10 +173,7 @@ export class Game {
 
 	break() {
 		if (this.keys["Space"]) {
-			this.white.hit(
-				vec3.fromValues(-2, 0, -2),
-					vec3.fromValues(2, 0, 2)
-			);
+			this.white.hit();
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
 	}

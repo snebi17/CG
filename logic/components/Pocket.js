@@ -15,8 +15,6 @@ export class Pocket extends Component {
 		const z = (max[2] + min[2]) / 2;
 
 		this.center = vec3.fromValues(x, y, z);
-		// vec3.add(this.transform.translation, this.transform.translation, this.center);
-		// console.log(`Pocket ${this.id} aabb ${this.node.aabb.min}, ${this.node.aabb.max}`)
 
 
 	}
