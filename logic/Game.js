@@ -120,12 +120,6 @@ export class Game {
 		this.edges = this.scene.children
 			.slice(13, 19)
 			.map((node, i) => new Edge(i, node));
-
-		// this.edges.find((edge) => {
-		// 	if (edge.id == 4) {
-		// 		this.scene.removeChild(edge.node);
-		// 	}
-		// });
 	}
 
 	keydownHandler(e) {
@@ -147,7 +141,13 @@ export class Game {
 		}
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
-			this.resolveCollision(time, dt);
+			this.table.update(time, dt);
+			if (this.table.isStill) {
+				/**
+				 * Check for faults
+				 */
+				this.gameState = GameState.IN_PROGRESS;
+			}
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
@@ -208,8 +208,6 @@ export class Game {
 	}
 
 	resolveCollision(time, dt) {
-		this.table.update(time, dt);
-
 		this.pocketedBalls = this.balls.filter((ball) => ball.isPocketed);
 
 		this.movingBalls = this.balls.filter((ball) => ball.isMoving);

@@ -8,11 +8,16 @@ export class Table {
 		balls,
 		edges,
 		pockets,
-		{ movingBalls = [], pocketedBalls = [] } = {}
+		{
+			movingBalls = [],
+			pocketedBalls = [],
+			frictionCoefficient = 0.05,
+		} = {}
 	) {
 		this.balls = balls;
 		this.edges = edges;
 		this.pockets = pockets;
+		this.frictionCoefficient = frictionCoefficient;
 
 		this.movingBalls = movingBalls;
 		this.pocketedBalls = pocketedBalls;
@@ -25,7 +30,7 @@ export class Table {
 			}
 
 			this.edges.forEach((edge) => {
-				edge.resolveCollision(ball);
+				this.handleBounce(ball, edge);
 			});
 			this.pockets.forEach((pocket) => {
 				this.handlePocketing(ball, pocket);
@@ -35,6 +40,7 @@ export class Table {
 
 	handlePocketing(ball, pocket) {
 		if (this.resolveCollision(ball.node, pocket.node)) {
+			console.log(pocket);
 			this.pocketedBalls.push(ball);
 		}
 	}
@@ -53,7 +59,18 @@ export class Table {
 				 * Ball to edge collision
 				 * Calculate velocity and direction in which the ball should move after collision with an edge
 				 */
-				ball.move();
+				const velocity = ball.velocity;
+				const speed = vec3.length(velocity);
+				if (speed < 0.01) {
+					vec3.set(velocity, 0, 0, 0);
+					return;
+				}
+
+				const normal = other.normal;
+				const dotProduct = vec3.dot(velocity, normal);
+				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
+				vec3.normalize(velocity, velocity);
+				vec3.scale(velocity, velocity, 1 - this.frictionCoefficient);
 			}
 		}
 	}

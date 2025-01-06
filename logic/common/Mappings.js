@@ -102,12 +102,19 @@ const PocketMapping = {
 };
 
 const EdgeMapping = {
-	0: EdgeLocation.LEFT_LOWER,
-	1: EdgeLocation.RIGHT_UPPER,
-	2: EdgeLocation.LEFT_UPPER,
-	3: EdgeLocation.LOWER,
-	4: EdgeLocation.UPPER,
-	5: EdgeLocation.RIGHT_LOWER,
+	0: EdgeLocation.RIGHT_LOWER,
+	1: EdgeLocation.LEFT_LOWER,
+	2: EdgeLocation.RIGHT_UPPER,
+	3: EdgeLocation.LEFT_UPPER,
+	4: EdgeLocation.LOWER,
+	5: EdgeLocation.UPPER,
 };
 
-export { BallMapping, PocketMapping, EdgeMapping };
+const EdgeNormalMapping = {
+	left: [0, 0, -1],
+	right: [0, 0, 1],
+	upper: [1, 0, 0],
+	lower: [-1, 0, 0],
+};
+
+export { BallMapping, PocketMapping, EdgeMapping, EdgeNormalMapping };

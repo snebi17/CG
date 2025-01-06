@@ -53,13 +53,6 @@ const EdgeLocation = {
 	LOWER: "lower",
 };
 
-const EdgeNormals = {
-	left: [0, 0, -1],
-	right: [0, 0, 1],
-	upper: [-1, 0, 0],
-	lower: [1, 0, 0],
-};
-
 const ShotResult = {
 	NONE: "none",
 	LEGAL: "legal",
@@ -75,5 +68,4 @@ export {
 	PocketLocation,
 	ShotResult,
 	EdgeLocation,
-	EdgeNormals,
 };
