@@ -25,7 +25,7 @@ export class Table {
 			}
 
 			this.edges.forEach((edge) => {
-				this.handleBounce(ball, edge);
+				edge.resolveCollision(ball);
 			});
 			this.pockets.forEach((pocket) => {
 				this.handlePocketing(ball, pocket);
@@ -46,14 +46,8 @@ export class Table {
 				 * Ball to ball collision
 				 * Calculate kinetic energy and momentum the ball gives to another ball when collision occurs
 				 */
-				ball.move(
-					vec3.fromValues(-1, 0, 0),
-					vec3.fromValues(1, 0, 0)
-				);
-				other.move(
-					vec3.fromValues(1, 0, 0),
-					vec3.fromValues(-1, 0, 0)
-				);
+				ball.move(vec3.fromValues(-1, 0, 0), vec3.fromValues(1, 0, 0));
+				other.move(vec3.fromValues(1, 0, 0), vec3.fromValues(-1, 0, 0));
 			} else {
 				/**
 				 * Ball to edge collision

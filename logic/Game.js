@@ -118,8 +118,14 @@ export class Game {
 			.map((node, i) => new Pocket(i, node));
 
 		this.edges = this.scene.children
-			.slice(14, 19)
+			.slice(13, 19)
 			.map((node, i) => new Edge(i, node));
+
+		// this.edges.find((edge) => {
+		// 	if (edge.id == 4) {
+		// 		this.scene.removeChild(edge.node);
+		// 	}
+		// });
 	}
 
 	keydownHandler(e) {

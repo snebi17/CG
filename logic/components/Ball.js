@@ -1,5 +1,5 @@
-import { Transform, Model } from "../../engine/core.js";
-import { vec3, mat4 } from "../../lib/glm.js";
+import { Transform } from "../../engine/core.js";
+import { vec3 } from "../../lib/glm.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
@@ -9,42 +9,33 @@ export class Ball extends Component {
 		id,
 		node,
 		{
+			ballMapping = BallMapping[id],
+
 			velocity = vec3.create(),
-			direction = vec3.create(),
+			position = vec3.create(),
 			deceleration = 0.4,
+
 			isMoving = false,
 			isPocketed = false,
-			position = vec3.create(),
 		} = {}
 	) {
-		super(id, node);
+		super(id, node, false);
 
-		this.init();
+		this.color = ballMapping.color;
+		this.type = ballMapping.type;
+		this.node.addComponent(this);
 
 		this.position = position;
 		this.velocity = velocity;
-		this.direction = direction;
 		this.deceleration = deceleration;
+
 		this.isMoving = isMoving;
 		this.isPocketed = isPocketed;
 	}
 
-	init() {
-		this.color = BallMapping[this.id].color;
-		this.type = BallMapping[this.id].type;
-
-		this.node.isDynamic = true;
-		this.node.addComponent(this);
-	}
-
-	hit(velocity = vec3.create(), direction = vec3.create()) {
+	hit() {
 		vec3.random(this.velocity);
-		vec3.random(this.direction);
 		this.velocity[1] = 0;
-		this.direction[1] = 0;
-
-		console.log(this.velocity)
-		console.log(this.direction)
 		this.isMoving = true;
 	}
 
@@ -62,7 +53,7 @@ export class Ball extends Component {
 		vec3.scaleAndAdd(
 			this.velocity,
 			this.velocity,
-			this.direction,
+			this.velocity,
 			this.deceleration * dt
 		);
 
@@ -86,7 +77,12 @@ export class Ball extends Component {
 	}
 
 	pocketAnimation(dt) {
-		this.transform.translation[1] -= dt;
-		console.log(this.transform.translation);
+		const transform = this.node.getComponentOfType(Transform);
+
+		vec3.sub(
+			transform.translation,
+			transform.translation,
+			vec3.fromValues(0, dt, 0)
+		);
 	}
 }

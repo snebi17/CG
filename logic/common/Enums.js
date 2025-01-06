@@ -44,6 +44,22 @@ const PocketLocation = {
 	LOWER_RIGHT: "lower right",
 };
 
+const EdgeLocation = {
+	LEFT_LOWER: "left lower",
+	LEFT_UPPER: "left upper",
+	RIGHT_LOWER: "right lower",
+	RIGHT_UPPER: "right upper",
+	UPPER: "upper",
+	LOWER: "lower",
+};
+
+const EdgeNormals = {
+	left: [0, 0, -1],
+	right: [0, 0, 1],
+	upper: [-1, 0, 0],
+	lower: [1, 0, 0],
+};
+
 const ShotResult = {
 	NONE: "none",
 	LEGAL: "legal",
@@ -51,4 +67,13 @@ const ShotResult = {
 	FOULED: "fouled",
 };
 
-export { BallColor, BallType, GameType, GameState, PocketLocation, ShotResult };
+export {
+	BallColor,
+	BallType,
+	GameType,
+	GameState,
+	PocketLocation,
+	ShotResult,
+	EdgeLocation,
+	EdgeNormals,
+};

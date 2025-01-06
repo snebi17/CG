@@ -136,9 +136,6 @@ export class FirstPersonController {
 
 		this.pitch = Math.min(Math.max(this.pitch, -halfpi), halfpi);
 		this.yaw = ((this.yaw % twopi) + twopi) % twopi;
-		// console.log(`Perspective matrix\n${this.node.getComponentOfType(Camera)?.perspectiveMatrix}`);
-		// console.log(`Ortographic matrix\n${this.node.getComponentOfType(Camera)?.orthographicMatrix}`);
-		console.log(`Projection matrix\n${this.node.getComponentOfType(Camera)?.projectionMatrix}`);
 	}
 
 	keydownHandler(e) {
