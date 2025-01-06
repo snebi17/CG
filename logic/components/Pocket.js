@@ -3,14 +3,15 @@ import { PocketMapping } from "../common/Mappings.js";
 
 export class Pocket extends Component {
 	constructor(id, node) {
-		super(id, node);
+		super(id, node, true);
 
 		this.position = PocketMapping[id];
-		this.node.isStatic = true;
 	}
 
 	resolveCollision(ball) {
-		ball.isPocketed = true;
-		return true;
+		if (ball.node.aabb < this.node.aabb) {
+			ball.isPocketed = true;
+			return true;
+		}
 	}
 }

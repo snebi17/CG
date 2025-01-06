@@ -3,7 +3,7 @@
  * Indicess 20 to 35 inclusive in .gltf represent nodes for balls.
  */
 
-import { BallColor, BallType, PocketLocation } from "./Enums.js";
+import { BallColor, BallType, PocketLocation, EdgeLocation } from "./Enums.js";
 
 /**
  * Stripes:
@@ -101,4 +101,20 @@ const PocketMapping = {
 	5: PocketLocation.MIDDLE_RIGHT,
 };
 
-export { BallMapping, PocketMapping };
+const EdgeMapping = {
+	0: EdgeLocation.RIGHT_LOWER,
+	1: EdgeLocation.LEFT_LOWER,
+	2: EdgeLocation.RIGHT_UPPER,
+	3: EdgeLocation.LEFT_UPPER,
+	4: EdgeLocation.LOWER,
+	5: EdgeLocation.UPPER,
+};
+
+const EdgeNormalMapping = {
+	left: [0, 0, -1],
+	right: [0, 0, 1],
+	upper: [1, 0, 0],
+	lower: [-1, 0, 0],
+};
+
+export { BallMapping, PocketMapping, EdgeMapping, EdgeNormalMapping };
