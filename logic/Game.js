@@ -10,8 +10,6 @@ import { Component } from "./components/Component.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 
 import { BallType, GameState } from "./common/Enums.js";
-
-import { Physics } from "./Physics.js";
 import { vec3 } from "../lib/glm.js";
 
 class Player {
@@ -23,21 +21,64 @@ class Player {
 }
 
 export class Game {
-	constructor(scene, camera, renderer, domElement) {
-		/**
-		 * scene - contains all scene nodes
-		 * camera - self explanatory
-		 * renderer - renders the scene to canvas
-		 */
-
+	/**
+	 * @param {Node} scene the scene containing child nodes
+	 * @param {Camera} camera camera used to track the cue ball
+	 * @param {UnlitRenderer} renderer renders the updated scene
+	 * @param {HTMLElement} domElement DOM element that gets passed into input controller
+	 * @param {*} args arguments for tracking key objects in the game
+	 */
+	constructor(
+		scene,
+		camera,
+		renderer,
+		domElement,
+		{
+			gameState = GameState.HITTING,
+			gameType = null,
+			player = null,
+			players = null,
+			currentPlayer = -1,
+			pocketedBalls = [],
+			movingBalls = [],
+			keys = {},
+		} = {}
+	) {
 		this.scene = scene;
 		this.camera = camera;
 		this.renderer = renderer;
 		this.domElement = domElement;
 
-		this.keys = {};
+		// gameState - used for state management
+		// gameType - used for initialization of player/players depending on mode of user choice
+		this.gameState = gameState;
+		this.gameType = gameType;
 
-		this.init();
+		// player - player object if singleplayer
+		// players - array of players if multiplayer
+		// currentPlayer - used for switching players on each turn
+		this.player = player;
+		this.players = players;
+		this.currentPlayer = currentPlayer;
+
+		this.pocketedBalls = pocketedBalls;
+
+		this.keys = keys;
+
+		this.setComponents();
+
+		this.camera.addComponent(
+			new FirstPersonController(this.camera, this.domElement)
+		);
+
+		this.table = new Table(this.balls, this.edges, this.pockets);
+
+		// const transform = this.camera.getComponentOfType(Transform);
+		// transform.matrix = this.white.node.getComponentOfType(Transform).matrix;
+		// transform.translation = this.white.center;
+		// transform.translation[1]++;
+
+		this.initHandlers();
 	}
 
 	/**
@@ -52,31 +93,6 @@ export class Game {
 	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
 	 */
 
-	init() {
-		// gameState - used for state management
-		// gameType - used for initialization of player/players depending on mode of user choice
-		this.gameState = GameState.HITTING;
-		this.gameType = null;
-
-		// player - player object if singleplayer
-		// players - array of players if multiplayer
-		// currentPlayer - used for switching players on each turn
-		this.player = null;
-		this.players = null;
-		this.currentPlayer = -1;
-
-		this.pocketedBalls = [];
-
-		this.setComponents();
-
-		this.camera.addComponent(
-			new FirstPersonController(this.camera, this.domElement)
-		);
-		this.physics = new Physics();
-
-		this.initHandlers();
-	}
-
 	initHandlers() {
 		this.keydownHandler = this.keydownHandler.bind(this);
 		this.keyupHandler = this.keyupHandler.bind(this);
@@ -90,18 +106,19 @@ export class Game {
 
 	setComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
-		this.white = new Ball(0, this.scene.children.at(20));
 
 		this.balls = this.scene.children
-			.slice(22, 37)
-			.map((node, i) => new Ball(i + 1, node));
+			.slice(20, 36)
+			.map((node, i) => new Ball(i, node));
+
+		this.white = this.balls.at(0);
 
 		this.pockets = this.scene.children
-			.slice(8, 14)
+			.slice(7, 14)
 			.map((node, i) => new Pocket(i, node));
 
 		this.edges = this.scene.children
-			.slice(14, 20)
+			.slice(13, 19)
 			.map((node, i) => new Edge(i, node));
 	}
 
@@ -113,51 +130,35 @@ export class Game {
 		this.keys[e.code] = false;
 	}
 
-	coinFlip() {
-		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
-	}
-
-	break() {
-		if (this.pocketedBalls.any()) {
-			this.players.push(new Player(0, BallType.SOLID));
-			this.players.push(new Player(1, BallType.STRIPES));
-			this.gameState = GameState.IN_PROGRESS;
-		} else {
-			this.gameState = GameState.PLAYER_NOT_SET;
-		}
-	}
-
-	setWhite() {}
-
-	switchPlayer() {
-		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
-	}
-
 	start() {
-		// if (this.settings.gameType == GameTypes.SINGLEPLAYER) {
-		// 	this.player = new Player(0, BallTypes.BOTH);
-		// } else {
-		// 	this.coinFlip();
-		// 	this.break();
-		// }
+		this.coinFlip();
+		this.gameState = GameState.STARTED;
 	}
 
 	update(time, dt) {
+		if (this.gameState == GameState.STARTED) {
+			this.break();
+		}
+
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
-			this.physics.update(time, dt);
-			this.camera.switchView();
+			this.table.update(time, dt);
+			if (this.table.isStill) {
+				/**
+				 * Check for faults
+				 */
+				this.gameState = GameState.IN_PROGRESS;
+			}
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
+			this.setCueBall();
 		}
 
-		if (this.gameState == GameState.HITTING) {
+		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
-				this.white.hit(
-					vec3.fromValues(1, 0, 0),
-					vec3.fromValues(-1, 0, 0)
-				);
-				this.gameState = this.gameState.RESOLVING_COLLISION;
+				console.log("Space");
+				this.white.hit();
+				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
 
@@ -170,5 +171,48 @@ export class Game {
 
 	render() {
 		this.renderer.render(this.scene, this.camera);
+	}
+
+	coinFlip() {
+		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
+	}
+
+	break() {
+		if (this.keys["Space"]) {
+			this.white.hit();
+			this.gameState = GameState.RESOLVING_COLLISION;
+		}
+	}
+
+	setCueBall() {}
+
+	switchPlayer() {
+		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
+	}
+
+	checkForFaults() {
+		const pocketedBalls = this.table.pocketedBalls.filter(
+			(ball) => ball.type != this.currentPlayer.type
+		);
+		if (pocketedBalls.length == 0) {
+		}
+		// const faulPockets = this.pocketedBalls.filter(
+		// 	(ball) => ball.type !== this.currentPlayer.type
+		// );
+
+		// if (faulPockets.length == 0) {
+		// 	this.switchPlayer();
+		// }
+
+		this.gameState = GameState.IN_PROGRESS;
+	}
+
+	resolveCollision(time, dt) {
+		this.pocketedBalls = this.balls.filter((ball) => ball.isPocketed);
+
+		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
+		if (this.movingBalls.length == 0) {
+			this.checkForFaults();
+		}
 	}
 }

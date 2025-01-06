@@ -6,14 +6,10 @@ import {
 import { Model } from "../../engine/core.js";
 
 export class Component {
-	constructor(id, node) {
+	constructor(id, node, isStatic) {
 		this.id = id;
 		this.node = node;
-
-		this.setAxisAlignedBoundingBox();
-	}
-
-	setAxisAlignedBoundingBox() {
+		this.node.isStatic = isStatic;
 		this.model = this.node.getComponentOfType(Model);
 
 		if (!this.model) {

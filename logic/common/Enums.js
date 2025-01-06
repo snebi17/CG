@@ -26,12 +26,10 @@ const GameType = {
 
 const GameState = {
 	NONE: "none",
-	PLAYER_NOT_SET: "player not set",
-	BALL_IN_HAND: "ball in hand",
 
-	LOADING: "loading",
-	HITTING: "hitting",
+	STARTED: "started",
 	RESOLVING_COLLISION: "resolving collision",
+	BALL_IN_HAND: "ball in hand",
 	IN_PROGRESS: "in progress",
 	FINISHED: "finished",
 };
@@ -46,6 +44,15 @@ const PocketLocation = {
 	LOWER_RIGHT: "lower right",
 };
 
+const EdgeLocation = {
+	LEFT_LOWER: "left lower",
+	LEFT_UPPER: "left upper",
+	RIGHT_LOWER: "right lower",
+	RIGHT_UPPER: "right upper",
+	UPPER: "upper",
+	LOWER: "lower",
+};
+
 const ShotResult = {
 	NONE: "none",
 	LEGAL: "legal",
@@ -53,4 +60,12 @@ const ShotResult = {
 	FOULED: "fouled",
 };
 
-export { BallColor, BallType, GameType, GameState, PocketLocation, ShotResult };
+export {
+	BallColor,
+	BallType,
+	GameType,
+	GameState,
+	PocketLocation,
+	ShotResult,
+	EdgeLocation,
+};
