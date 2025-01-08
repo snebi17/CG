@@ -265,6 +265,9 @@ export class GLTFLoader {
 		}
 
 		const material = new Material(options);
+		material.diffuse = 1;
+		material.specular = 1;
+		material.shininess = 50;
 
 		this.cache.set(gltfSpec, material);
 		return material;
