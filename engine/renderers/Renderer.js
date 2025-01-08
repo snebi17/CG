@@ -1,19 +1,19 @@
-import { mat4 } from "glm";
+import { vec3, mat4 } from "glm";
 
-import * as WebGPU from "../WebGPU.js";
+import * as WebGPU from "engine/WebGPU.js";
 
-import { Camera, Model } from "../core.js";
+import { Camera, Model, Light } from "engine/core.js";
+import { BaseRenderer } from "engine/renderers/BaseRenderer.js";
 
 import {
 	getLocalModelMatrix,
+	getGlobalModelMatrix,
 	getGlobalViewMatrix,
 	getProjectionMatrix,
-} from "../core/SceneUtils.js";
-
-import { BaseRenderer } from "./BaseRenderer.js";
+} from "engine/core/SceneUtils.js";
 
 const vertexBufferLayout = {
-	arrayStride: 20,
+	arrayStride: 48,
 	attributes: [
 		{
 			name: "position",
@@ -27,10 +27,22 @@ const vertexBufferLayout = {
 			offset: 12,
 			format: "float32x2",
 		},
+		{
+			name: "normal",
+			shaderLocation: 2,
+			offset: 20,
+			format: "float32x3",
+		},
+		{
+			name: "tangent",
+			shaderLocation: 3,
+			offset: 32,
+			format: "float32x3",
+		},
 	],
 };
 
-export class UnlitRenderer extends BaseRenderer {
+export class Renderer extends BaseRenderer {
 	constructor(canvas) {
 		super(canvas);
 	}
@@ -38,9 +50,9 @@ export class UnlitRenderer extends BaseRenderer {
 	async initialize() {
 		await super.initialize();
 
-		const code = await fetch(
-			new URL("UnlitRenderer.wgsl", import.meta.url)
-		).then((response) => response.text());
+		const code = await fetch("./engine/renderers/shader.wgsl").then(
+			(response) => response.text()
+		);
 		const module = this.device.createShaderModule({ code });
 
 		this.pipeline = await this.device.createRenderPipelineAsync({
@@ -83,7 +95,7 @@ export class UnlitRenderer extends BaseRenderer {
 		});
 
 		const modelBindGroup = this.device.createBindGroup({
-			layout: this.pipeline.getBindGroupLayout(1),
+			layout: this.pipeline.getBindGroupLayout(2),
 			entries: [{ binding: 0, resource: { buffer: modelUniformBuffer } }],
 		});
 
@@ -98,7 +110,7 @@ export class UnlitRenderer extends BaseRenderer {
 		}
 
 		const cameraUniformBuffer = this.device.createBuffer({
-			size: 128,
+			size: 144,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		});
 
@@ -114,12 +126,32 @@ export class UnlitRenderer extends BaseRenderer {
 		return gpuObjects;
 	}
 
+	prepareLight(light) {
+		if (this.gpuObjects.has(light)) {
+			return this.gpuObjects.get(light);
+		}
+
+		const lightUniformBuffer = this.device.createBuffer({
+			size: 48,
+			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+		});
+
+		const lightBindGroup = this.device.createBindGroup({
+			layout: this.pipeline.getBindGroupLayout(1),
+			entries: [{ binding: 0, resource: { buffer: lightUniformBuffer } }],
+		});
+
+		const gpuObjects = { lightUniformBuffer, lightBindGroup };
+		this.gpuObjects.set(light, gpuObjects);
+		return gpuObjects;
+	}
+
 	prepareTexture(texture) {
 		if (this.gpuObjects.has(texture)) {
 			return this.gpuObjects.get(texture);
 		}
 
-		const { gpuTexture } = this.prepareImage(texture.image); // ignore sRGB
+		const { gpuTexture } = this.prepareImage(texture.image, texture.isSRGB);
 		const { gpuSampler } = this.prepareSampler(texture.sampler);
 
 		const gpuObjects = { gpuTexture, gpuSampler };
@@ -133,18 +165,21 @@ export class UnlitRenderer extends BaseRenderer {
 		}
 
 		const baseTexture = this.prepareTexture(material.baseTexture);
+		const normalTexture = this.prepareTexture(material.normalTexture);
 
 		const materialUniformBuffer = this.device.createBuffer({
-			size: 16,
+			size: 32,
 			usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 		});
 
 		const materialBindGroup = this.device.createBindGroup({
-			layout: this.pipeline.getBindGroupLayout(2),
+			layout: this.pipeline.getBindGroupLayout(3),
 			entries: [
 				{ binding: 0, resource: { buffer: materialUniformBuffer } },
 				{ binding: 1, resource: baseTexture.gpuTexture.createView() },
 				{ binding: 2, resource: baseTexture.gpuSampler },
+				{ binding: 3, resource: normalTexture.gpuTexture.createView() },
+				{ binding: 4, resource: normalTexture.gpuSampler },
 			],
 		});
 
@@ -183,6 +218,10 @@ export class UnlitRenderer extends BaseRenderer {
 		const cameraComponent = camera.getComponentOfType(Camera);
 		const viewMatrix = getGlobalViewMatrix(camera);
 		const projectionMatrix = getProjectionMatrix(camera);
+		const cameraPosition = mat4.getTranslation(
+			vec3.create(),
+			getGlobalModelMatrix(camera)
+		);
 		const { cameraUniformBuffer, cameraBindGroup } =
 			this.prepareCamera(cameraComponent);
 		this.device.queue.writeBuffer(cameraUniformBuffer, 0, viewMatrix);
@@ -191,7 +230,27 @@ export class UnlitRenderer extends BaseRenderer {
 			64,
 			projectionMatrix
 		);
+		this.device.queue.writeBuffer(cameraUniformBuffer, 128, cameraPosition);
 		this.renderPass.setBindGroup(0, cameraBindGroup);
+
+		const light = scene.find((node) => node.getComponentOfType(Light));
+		const lightComponent = light.getComponentOfType(Light);
+		const lightColor = vec3.scale(
+			vec3.create(),
+			lightComponent.color,
+			lightComponent.intensity / 255
+		);
+		const lightPosition = mat4.getTranslation(
+			vec3.create(),
+			getGlobalModelMatrix(light)
+		);
+		const lightAttenuation = vec3.clone(lightComponent.attenuation);
+		const { lightUniformBuffer, lightBindGroup } =
+			this.prepareLight(lightComponent);
+		this.device.queue.writeBuffer(lightUniformBuffer, 0, lightColor);
+		this.device.queue.writeBuffer(lightUniformBuffer, 16, lightPosition);
+		this.device.queue.writeBuffer(lightUniformBuffer, 32, lightAttenuation);
+		this.renderPass.setBindGroup(1, lightBindGroup);
 
 		this.renderNode(scene);
 
@@ -207,7 +266,7 @@ export class UnlitRenderer extends BaseRenderer {
 		const { modelUniformBuffer, modelBindGroup } = this.prepareNode(node);
 		this.device.queue.writeBuffer(modelUniformBuffer, 0, modelMatrix);
 		this.device.queue.writeBuffer(modelUniformBuffer, 64, normalMatrix);
-		this.renderPass.setBindGroup(1, modelBindGroup);
+		this.renderPass.setBindGroup(2, modelBindGroup);
 
 		for (const model of node.getComponentsOfType(Model)) {
 			this.renderModel(model);
@@ -225,22 +284,27 @@ export class UnlitRenderer extends BaseRenderer {
 	}
 
 	renderPrimitive(primitive) {
+		const material = primitive.material;
 		const { materialUniformBuffer, materialBindGroup } =
 			this.prepareMaterial(primitive.material);
 		this.device.queue.writeBuffer(
 			materialUniformBuffer,
 			0,
-			new Float32Array(primitive.material.baseFactor)
+			new Float32Array([
+				...material.baseFactor,
+				material.normalFactor,
+				material.diffuse,
+				material.specular,
+				material.shininess,
+			])
 		);
-		this.renderPass.setBindGroup(2, materialBindGroup);
+		this.renderPass.setBindGroup(3, materialBindGroup);
 
 		const { vertexBuffer, indexBuffer } = this.prepareMesh(
 			primitive.mesh,
 			vertexBufferLayout
 		);
-
 		this.renderPass.setVertexBuffer(0, vertexBuffer);
-
 		this.renderPass.setIndexBuffer(indexBuffer, "uint32");
 
 		this.renderPass.drawIndexed(primitive.mesh.indices.length);

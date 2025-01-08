@@ -29,17 +29,8 @@ export class Ball extends Component {
 		this.isPocketed = isPocketed;
 	}
 
-	init() {
-		this.color = BallMapping[this.id].color;
-		this.type = BallMapping[this.id].type;
-
-		this.node.isDynamic = true;
-		this.node.addComponent(this);
-	}
-
-	hit(velocity = vec3.create(), direction = vec3.create()) {
-		vec3.random(this.velocity);
-		vec3.random(this.direction);
+	hit(velocity) {
+		this.velocity = velocity;
 		this.velocity[1] = 0;
 		this.direction[1] = 0;
 

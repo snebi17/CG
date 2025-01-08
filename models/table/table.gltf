@@ -1122,18 +1122,18 @@
 	"images":[
 		{
 			"mimeType":"image/png",
-			"name":"pool table low_POOL TABLE_Normal",
-			"uri":"pool%20table%20low_POOL%20TABLE_Normal.png"
+			"name":"Normal",
+			"uri":"Normal.png"
 		},
 		{
 			"mimeType":"image/png",
-			"name":"pool table low_POOL TABLE_BaseColor",
-			"uri":"pool%20table%20low_POOL%20TABLE_BaseColor.png"
+			"name":"BaseColor",
+			"uri":"BaseColor.png"
 		},
 		{
 			"mimeType":"image/png",
-			"name":"pool table low_POOL TABLE_Metallic-pool table low_POOL TABLE_Roughness",
-			"uri":"pool%20table%20low_POOL%20TABLE_Metallic-pool%20table%20low_POOL%20TABLE_Roughness.png"
+			"name":"Roughness",
+			"uri":"Roughness.png"
 		}
 	],
 	"accessors":[

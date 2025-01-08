@@ -21,9 +21,11 @@ export class Table {
 
 	update(t, dt) {
 		this.balls.forEach((ball) => {
-			if (ball.isMoving) {
-				this.movingBalls.push(ball);
-			}
+			this.balls.forEach((other) => {
+				if (other != ball) {
+					this.handleBounce(dt, ball, other);
+				}
+			});
 
 			this.edges.forEach((edge) => {
 				this.handleBounce(dt, ball, edge);
@@ -43,37 +45,45 @@ export class Table {
 
 	handleBounce(dt, ball, other) {
 		if (this.resolveCollision(ball.node, other.node)) {
+			const velocity = vec3.create();
+			vec3.copy(velocity, ball.velocity);
+			const speed = vec3.length(velocity);
+
+			if (speed < 0.01) {
+				vec3.set(velocity, 0, 0, 0);
+				return;
+			}
+
 			if (other instanceof Ball) {
 				/**
 				 * Ball to ball collision
 				 * Calculate kinetic energy and momentum the ball gives to another ball when collision occurs
 				 */
-				ball.move(vec3.fromValues(-1, 0, 0), vec3.fromValues(1, 0, 0));
-				other.hit();
+				const negatedVelocity = vec3.create();
+				vec3.negate(negatedVelocity, velocity);
+				vec3.scale(negatedVelocity, negatedVelocity, 0.8);
+				ball.hit(negatedVelocity);
+				const conservedVelocity = vec3.create();
+				vec3.scale(conservedVelocity, velocity, 0.9);
+				other.hit(conservedVelocity);
 			} else {
 				/**
 				 * Ball to edge collision
 				 * Calculate velocity and direction in which the ball should move after collision with an edge
 				 */
-				const velocity = ball.velocity;
-				const speed = vec3.length(velocity);
-				if (speed < 0.01) {
-					vec3.set(velocity, 0, 0, 0);
-					return;
-				}
-
 				const normal = other.normal;
 				const dotProduct = vec3.dot(velocity, normal);
 				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
 				vec3.scale(velocity, velocity, 1 - this.frictionCoefficient);
 				vec3.scale(velocity, velocity, 1 - ball.deceleration * dt);
-				// const clampedSpeed = Math.min(speed, vec3.length(velocity));
-				// vec3.scale(
-				// 	velocity,
-				// 	velocity,
-				// 	clampedSpeed / vec3.length(velocity)
-				// );
-				console.log(velocity);
+				const clampedSpeed = Math.min(speed, vec3.length(velocity));
+				vec3.scale(
+					velocity,
+					velocity,
+					clampedSpeed / vec3.length(velocity)
+				);
+
+				ball.hit(velocity);
 			}
 		}
 	}

@@ -150,8 +150,9 @@ export class Game {
 
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
-				console.log("Space");
-				this.white.hit();
+				const velocity = vec3.create();
+				vec3.random(velocity);
+				this.white.hit(velocity);
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
@@ -173,7 +174,9 @@ export class Game {
 
 	break() {
 		if (this.keys["Space"]) {
-			this.white.hit();
+			const velocity = vec3.create();
+			vec3.random(velocity);
+			this.white.hit(velocity);
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
 	}
