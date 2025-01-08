@@ -49,6 +49,7 @@ export class Table {
 				vec3.set(velocity, 0, 0, 0);
 				return;
 			}
+
 			if (other instanceof Ball) {
 				/**
 				 * Ball to ball collision
@@ -61,13 +62,6 @@ export class Table {
 				 * Ball to edge collision
 				 * Calculate velocity and direction in which the ball should move after collision with an edge
 				 */
-				const velocity = ball.velocity;
-				const speed = vec3.length(velocity);
-				if (speed < 0.01) {
-					vec3.set(velocity, 0, 0, 0);
-					return;
-				}
-
 				const normal = other.normal;
 				const dotProduct = vec3.dot(velocity, normal);
 				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
