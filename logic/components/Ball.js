@@ -19,8 +19,6 @@ export class Ball extends Component {
 	) {
 		super(id, node);
 
-		this.init();
-
 		this.position = position;
 		this.velocity = velocity;
 		this.direction = direction;
@@ -32,10 +30,6 @@ export class Ball extends Component {
 	hit(velocity) {
 		this.velocity = velocity;
 		this.velocity[1] = 0;
-		this.direction[1] = 0;
-
-		console.log(this.velocity)
-		console.log(this.direction)
 		this.isMoving = true;
 	}
 
@@ -53,7 +47,7 @@ export class Ball extends Component {
 		vec3.scaleAndAdd(
 			this.velocity,
 			this.velocity,
-			this.direction,
+			this.velocity,
 			this.deceleration * dt
 		);
 
