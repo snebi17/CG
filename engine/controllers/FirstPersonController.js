@@ -1,6 +1,7 @@
 import { quat, vec3, mat4 } from "glm";
 
 import { Transform } from "../core/Transform.js";
+import { Camera } from "../core/Camera.js";
 
 export class FirstPersonController {
 	constructor(
@@ -139,6 +140,7 @@ export class FirstPersonController {
 
 	keydownHandler(e) {
 		this.keys[e.code] = true;
+		// console.log(this.node.getComponentOfType(Transform).matrix);
 	}
 
 	keyupHandler(e) {

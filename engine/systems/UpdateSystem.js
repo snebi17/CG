@@ -5,7 +5,6 @@ export class UpdateSystem {
 
 		this.application = application;
 		this.running = false;
-		console.log(this.application);
 	}
 
 	start() {

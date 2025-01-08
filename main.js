@@ -1,20 +1,13 @@
 import { UpdateSystem } from "./engine/systems/UpdateSystem.js";
-import { UnlitRenderer } from "./engine/renderers/UnlitRenderer.js";
+import { Renderer } from "../engine/renderers/Renderer.js";
 import { ResizeSystem } from "./engine/systems/ResizeSystem.js";
-import { GLTFLoader } from "./engine/loaders/GLTFLoader.js";
-import * as SceneUtils from "./engine/core/SceneUtils.js";
-import { Transform } from "./engine/core.js";
-
-import { Camera } from "engine/core.js";
-import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
-// import { OrbitController } from "./engine/controllers/OrbitController.js";
-import { TurntableController } from "./engine/controllers/TurntableController.js";
-// import { TouchController } from "./engine/controllers/TouchController.js";
+import { GLTFLoader } from "../engine/loaders/GLTFLoader.js";
+import { Camera, Light, Node, Transform } from "../engine/core.js";
 
 import { Game } from "./logic/Game.js";
 
 const canvas = document.querySelector("canvas");
-const renderer = new UnlitRenderer(canvas);
+const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
@@ -25,23 +18,30 @@ if (!scene) {
 	throw new Error("A default scene is required to run this example");
 }
 
+const firstLight = new Node();
+firstLight.addComponent(new Transform({ translation: [0, 3.5, 0] }));
+firstLight.addComponent(new Light({ intensity: 2 }));
+
+scene.addChild(firstLight);
+
+// const secondLight = new Node();
+// secondLight.addComponent(new Transform({ translation: [0, 3.5, 0] }));
+// secondLight.addComponent(new Light({ intensity: 2 }));
+
+// scene.addChild(secondLight);
+
 const camera = scene.find((node) => node.getComponentOfType(Camera));
+camera.isDynamic = true;
 
 if (!camera) {
 	throw new Error("A camera in the scene is require to run this example");
 }
 
-camera.addComponent(new FirstPersonController(camera, canvas));
-
 function resize({ displaySize: { width, height } }) {
 	camera.getComponentOfType(Camera).aspect = width / height;
 }
 
-const game = new Game(scene, camera, renderer);
-// console.log(SceneUtils.getGlobalModelMatrix(game.balls.at(0)));
-// console.log(game.balls.getComponentOfType(Transform));
-console.log(SceneUtils.getGlobalModelMatrix(game.balls.at(0).node));
-
+const game = new Game(scene, camera, renderer, canvas);
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem(game).start();
