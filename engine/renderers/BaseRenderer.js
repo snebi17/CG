@@ -40,7 +40,6 @@ export class BaseRenderer {
 			return this.gpuObjects.get(sampler);
 		}
 
-		console.log(sampler);
 		const gpuSampler = this.device.createSampler(sampler);
 
 		const gpuObjects = { gpuSampler };

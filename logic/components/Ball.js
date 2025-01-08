@@ -33,8 +33,8 @@ export class Ball extends Component {
 		this.isPocketed = isPocketed;
 	}
 
-	hit() {
-		vec3.random(this.velocity);
+	hit(velocity) {
+		this.velocity = velocity;
 		this.velocity[1] = 0;
 		this.isMoving = true;
 	}
