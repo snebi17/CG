@@ -43,12 +43,6 @@ export class Table {
 
 	handleBounce(dt, ball, other) {
 		if (this.resolveCollision(ball.node, other.node)) {
-			const velocity = ball.velocity;
-			const speed = vec3.length(velocity);
-			if (speed < 0.01) {
-				vec3.set(velocity, 0, 0, 0);
-				return;
-			}
 			if (other instanceof Ball) {
 				/**
 				 * Ball to ball collision
@@ -73,12 +67,12 @@ export class Table {
 				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
 				vec3.scale(velocity, velocity, 1 - this.frictionCoefficient);
 				vec3.scale(velocity, velocity, 1 - ball.deceleration * dt);
-				const clampedSpeed = Math.min(speed, vec3.length(velocity));
-				vec3.scale(
-					velocity,
-					velocity,
-					clampedSpeed / vec3.length(velocity)
-				);
+				// const clampedSpeed = Math.min(speed, vec3.length(velocity));
+				// vec3.scale(
+				// 	velocity,
+				// 	velocity,
+				// 	clampedSpeed / vec3.length(velocity)
+				// );
 				console.log(velocity);
 			}
 		}
