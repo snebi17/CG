@@ -128,8 +128,8 @@ export class FirstPersonController {
 		const dx = e.movementX;
 		const dy = e.movementY;
 
-		this.pitch -= dy * this.pointerSensitivity;
-		this.yaw -= dx * this.pointerSensitivity;
+		this.pitch -= dy * this.pointerSensitivity / 2;
+		this.yaw -= dx * this.pointerSensitivity / 2;
 
 		const twopi = Math.PI * 2;
 		const halfpi = Math.PI / 2;

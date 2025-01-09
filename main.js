@@ -43,5 +43,7 @@ function resize({ displaySize: { width, height } }) {
 
 const game = new Game(scene, camera, renderer, canvas);
 
+console.log(game.cue.node.getComponentOfType(Transform));
+
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem(game).start();

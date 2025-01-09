@@ -8,9 +8,10 @@ import { Pocket } from "./components/Pocket.js";
 import { Component } from "./components/Component.js";
 
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
+import { OrbitController } from "../engine/controllers/OrbitController.js";
 
 import { BallType, GameState } from "./common/Enums.js";
-import { vec3 } from "../lib/glm.js";
+import { vec3, quat } from "../lib/glm.js";
 
 class Player {
 	constructor(id, type) {
@@ -67,8 +68,14 @@ export class Game {
 
 		this.setComponents();
 
+		// this.camera.addComponent(
+		//      new FirstPersonController(this.camera, this.domElement)
+		// );
+
 		this.camera.addComponent(
-			new FirstPersonController(this.camera, this.domElement)
+			new OrbitController(this.camera, this.domElement, {
+				rotation : [0.7, 0, 0, 0.7]
+			})
 		);
 
 		this.table = new Table(this.balls, this.edges, this.pockets);
@@ -168,6 +175,14 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
+
+		// DODATEK KAMERA
+		const transform = this.camera.getComponentOfType(Transform);
+		const rotation = quat.create();
+		quat.rotateY(rotation, rotation, 1.5);
+		quat.rotateX(rotation, rotation, 0.0);
+		transform.rotation = rotation;
+
 	}
 
 	render() {
