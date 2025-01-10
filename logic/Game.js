@@ -185,10 +185,10 @@ export class Game {
 		// quat.rotateY(rotation, rotation, 1.5);
 		// quat.rotateX(rotation, rotation, 0.0);
 		// transform.rotation = rotation;
-		console.log(this.cue.node.getComponentOfType(Transform).translation);
+		console.log(this.cue.node.getComponentsOfType(Transform));
 		let cuePos = this.cue.node.getComponentOfType(Transform).translation;
 		this.controller.setTarget([cuePos[2], cuePos[0], cuePos[1]]);
-		console.log(this.camera.getComponentOfType(Transform).matrix);
+		// console.log(this.camera.getComponentOfType(Transform).matrix);
 
 	}
 
