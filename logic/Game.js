@@ -166,8 +166,8 @@ export class Game {
 
 	break() {
 		if (this.keys["Space"]) {
-			const velocity = vec3.fromValues(-1, 0, 0.1);
-			const speed = Math.random() * 5 + 1;
+			const velocity = vec3.fromValues(-1, 0, 0);
+			const speed = 5;
 			vec3.scale(velocity, velocity, speed);
 			this.white.hit(velocity);
 			this.gameState = GameState.RESOLVING_COLLISION;
