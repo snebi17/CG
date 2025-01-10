@@ -12,7 +12,7 @@ export class Edge extends Component {
 		const pos = this.position.split(" ");
 		this.normal = EdgeNormalMapping[pos[0]];
 
-		// console.log(this.normal);
+		console.log(this.normal);
 		const model = this.node.getComponentOfType(Model);
 		const mesh = model.primitives[0].mesh;
 		// this.preprocessVertices(mesh.vertices);
