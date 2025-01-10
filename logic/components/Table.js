@@ -40,105 +40,83 @@ export class Table {
 	}
 
 	handlePocketing(ball, pocket) {
-		// const ballBox = this.getTransformedAABB(ball.node);
-		// const pocketBox = this.getTransformedAABB(pocket.node);
-		// const isColliding = this.aabbIntersection(ballBox, pocketBox);
-		// if (isColliding) {
-		// 	ball.isPocketed = true;
-		// 	this.pocketedBalls.push(ball);
-		// }
+		if (this.resolveCollision(ball.node, pocket.node)) {
+			ball.isPocketed = true;
+			this.pocketedBalls.push(ball);
+		}
 	}
 
 	handleBounce(dt, ball, other) {
 		if (this.resolveCollision(ball.node, other.node)) {
-			const velocity = vec3.copy(vec3.create(), ball.velocity);
-			const speed = vec3.length(velocity);
+			const speed = vec3.length(ball.velocity);
 
 			if (speed < 0.01) {
-				vec3.zero(velocity);
-				ball.velocity = velocity;
+				vec3.zero(ball.velocity);
 				return;
 			}
 
 			if (other instanceof Ball) {
-				/**
-				 * Ball to ball collision
-				 * Calculate kinetic energy and momentum the ball gives to another ball when collision occurs
-				 */
-				// the angle between balls position vector on X axis
-				// console.log(ball.position);
-				console.log(other.position);
-				const ballPosition = vec3.copy(vec3.create(), ball.position);
-				const otherPosition = vec3.copy(vec3.create(), other.position);
+				const normal = vec3.create();
+				vec3.subtract(normal, other.position, ball.position);
+				vec3.normalize(normal, normal);
 
-				// Compute the vector between the centers
-				const collisionVector = vec3.create();
-				vec3.subtract(collisionVector, otherPosition, ballPosition);
+				if (other.isMoving) {
+					const dot1 = vec3.dot(ball.velocity, normal);
+					const dot2 = vec3.dot(other.velocity, normal);
 
-				// Normalize the collision vector
-				const collisionNormal = vec3.create();
-				vec3.normalize(collisionNormal, collisionVector);
+					const velocity1 = vec3.create();
+					const velocity2 = vec3.create();
 
-				// Compute the cosine of the angle
-				const speed = vec3.length(velocity);
-				const cosTheta = vec3.dot(velocity, collisionNormal) / speed;
+					vec3.scale(velocity1, normal, dot1);
+					vec3.subtract(ball.velocity, ball.velocity, velocity1);
 
-				// Compute the angle (in radians)
-				const angle = Math.acos(cosTheta);
-				console.log(angle);
-				// const phi = Math.random();
-				// // the angle between balls p
-				// position vector on Z axis
-				// const theta = Math.random();
+					vec3.scale(velocity2, normal, dot2);
+					vec3.subtract(other.velocity, other.velocity, velocity2);
 
-				// // get collision normal (vector that starts from ball's position to other's position)
-				// const negatedVelocity = vec3.create();
-				// vec3.negate(negatedVelocity, velocity);
-				// vec3.scale(negatedVelocity, negatedVelocity, 0.8);
-				// vec3.rotateX(
-				// 	negatedVelocity,
-				// 	negatedVelocity,
-				// 	ball.position,
-				// 	phi
-				// );
-				// vec3.rotateZ(
-				// 	negatedVelocity,
-				// 	negatedVelocity,
-				// 	ball.position,
-				// 	theta
-				// );
+					vec3.add(ball.velocity, ball.velocity, velocity2);
+					vec3.add(other.velocity, other.velocity, velocity1);
+				} else {
+					const dot = vec3.dot(ball.velocity, normal);
+					const velocity = vec3.create();
+					vec3.scale(velocity, normal, dot);
+					vec3.subtract(ball.velocity, ball.velocity, velocity);
 
-				// ball.hit(negatedVelocity);
-				// const conservedVelocity = vec3.create();
-				// vec3.scale(conservedVelocity, velocity, 0.8);
-				// vec3.rotateX(
-				// 	conservedVelocity,
-				// 	conservedVelocity,
-				// 	ball.position,
-				// 	phi
-				// );
-				// vec3.rotateZ(
-				// 	conservedVelocity,
-				// 	conservedVelocity,
-				// 	ball.position,
-				// 	theta
-				// );
-				// other.hit(conservedVelocity);
+					other.hit(normal);
+				}
 			} else if (other instanceof Edge) {
-				/**
-				 * Ball to edge collision
-				 * Calculate velocity and direction in which the ball should move after collision with an edge
-				 */
-				const normal = vec3.copy(vec3.create(), other.normal);
-				const dotProduct = vec3.dot(velocity, normal);
-				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
-				vec3.scale(velocity, velocity, 1 - this.frictionCoefficient);
-				ball.hit(velocity);
+				const normal = vec3.create();
+				vec3.copy(normal, other.normal);
+				vec3.normalize(normal, normal);
+
+				const dotProduct = vec3.dot(ball.velocity, normal);
+				vec3.scaleAndAdd(
+					ball.velocity,
+					ball.velocity,
+					normal,
+					-2 * dotProduct
+				);
+				vec3.scale(
+					ball.velocity,
+					ball.velocity,
+					1 - this.frictionCoefficient
+				);
 			}
 		}
 	}
 
-	calculateCollisionAngle(ball, other) {}
+	calculateCollisionAngle(velocity, position1, position2) {
+		const collisionVector = vec3.create();
+		vec3.subtract(collisionVector, position2, position1);
+
+		const collisionNormal = vec3.create();
+		vec3.normalize(collisionNormal, collisionVector);
+		console.log(collisionNormal);
+
+		const speed = vec3.length(velocity);
+		const cosTheta = vec3.dot(velocity, collisionNormal) / speed;
+
+		return Math.acos(cosTheta) / 2;
+	}
 
 	intervalIntersection(min1, max1, min2, max2) {
 		return !(min1 > max2 || min2 > max1);

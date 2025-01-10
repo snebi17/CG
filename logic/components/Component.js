@@ -25,13 +25,6 @@ export class Component {
 			return;
 		}
 
-		const transformMatrix = this.node.getComponentOfType(Transform).matrix;
-		const modelMatrix = model;
-
-		// console.log(modelMatrix.primitives[0].mesh);
-		// transformMesh(modelMatrix.primitives[0].mesh, transformMatrix);
-		// console.log(modelMatrix.primitives[0].mesh);
-
 		const boxes = model.primitives.map((primitive) =>
 			calculateAxisAlignedBoundingBox(primitive.mesh)
 		);
@@ -40,9 +33,8 @@ export class Component {
 
 		const aabb = this.node.aabb;
 		const x = (aabb.max[0] + aabb.min[0]) / 2;
-		const y = (aabb.max[1] + aabb.min[1]) / 2;
-		const z = (aabb.max[2] + aabb.min[2]) / 2;
+		const z = (aabb.max[1] + aabb.min[1]) / 2;
 
-		this.position = vec3.fromValues(x, y, z);
+		this.position = vec3.fromValues(x, 0, z);
 	}
 }
