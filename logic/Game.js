@@ -6,7 +6,11 @@ import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { Component } from "./components/Component.js";
-
+import {
+	getGlobalModelMatrix,
+	getLocalModelMatrix,
+} from "../engine/core/SceneUtils.js";
+import { mat4 } from "../lib/glm.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 
 import { BallType, GameState } from "./common/Enums.js";
@@ -40,7 +44,6 @@ export class Game {
 			players = null,
 			currentPlayer = -1,
 			pocketedBalls = [],
-			movingBalls = [],
 			keys = {},
 		} = {}
 	) {
@@ -60,23 +63,13 @@ export class Game {
 		this.player = player;
 		this.players = players;
 		this.currentPlayer = currentPlayer;
-
 		this.pocketedBalls = pocketedBalls;
-
 		this.keys = keys;
-
 		this.setComponents();
-
 		this.camera.addComponent(
 			new FirstPersonController(this.camera, this.domElement)
 		);
-
 		this.table = new Table(this.balls, this.edges, this.pockets);
-
-		// const transform = this.camera.getComponentOfType(Transform);
-		// transform.matrix = this.white.node.getComponentOfType(Transform).matrix;
-		// transform.translation = this.white.center;
-		// transform.translation[1]++;
 
 		this.initHandlers();
 	}
@@ -142,12 +135,6 @@ export class Game {
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.table.update(time, dt);
-			if (this.table.isStill) {
-				/**
-				 * Check for faults
-				 */
-				this.gameState = GameState.IN_PROGRESS;
-			}
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
@@ -156,8 +143,7 @@ export class Game {
 
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
-				const velocity = vec3.create();
-				vec3.random(velocity);
+				const velocity = vec3.random(vec3.create(), 2);
 				this.white.hit(velocity);
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
@@ -180,8 +166,9 @@ export class Game {
 
 	break() {
 		if (this.keys["Space"]) {
-			const velocity = vec3.create();
-			vec3.random(velocity);
+			const velocity = vec3.fromValues(-1, 0, 0.1);
+			const speed = Math.random() * 5 + 1;
+			vec3.scale(velocity, velocity, speed);
 			this.white.hit(velocity);
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
@@ -194,19 +181,6 @@ export class Game {
 	}
 
 	checkForFaults() {
-		const pocketedBalls = this.table.pocketedBalls.filter(
-			(ball) => ball.type != this.currentPlayer.type
-		);
-		if (pocketedBalls.length == 0) {
-		}
-		// const faulPockets = this.pocketedBalls.filter(
-		// 	(ball) => ball.type !== this.currentPlayer.type
-		// );
-
-		// if (faulPockets.length == 0) {
-		// 	this.switchPlayer();
-		// }
-
 		this.gameState = GameState.IN_PROGRESS;
 	}
 

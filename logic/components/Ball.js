@@ -1,8 +1,15 @@
 import { Transform } from "../../engine/core.js";
-import { vec3 } from "../../lib/glm.js";
+import { mat4, vec3 } from "../../lib/glm.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
+
+import {
+	getGlobalModelMatrix,
+	getGlobalViewMatrix,
+	getLocalModelMatrix,
+	getLocalViewMatrix,
+} from "../../engine/core/SceneUtils.js";
 
 export class Ball extends Component {
 	constructor(
@@ -12,7 +19,6 @@ export class Ball extends Component {
 			ballMapping = BallMapping[id],
 
 			velocity = vec3.create(),
-			position = vec3.create(),
 			deceleration = 0.4,
 
 			isMoving = false,
@@ -25,7 +31,6 @@ export class Ball extends Component {
 		this.type = ballMapping.type;
 		this.node.addComponent(this);
 
-		this.position = position;
 		this.velocity = velocity;
 		this.deceleration = deceleration;
 
@@ -44,24 +49,24 @@ export class Ball extends Component {
 			return;
 		}
 
-		if (vec3.length(this.velocity) < 0.01) {
-			this.velocity = vec3.create();
+		const speed = vec3.length(this.velocity);
+		if (speed < 0.015) {
+			vec3.zero(this.velocity);
 			this.isMoving = false;
 			return;
 		}
 
-		vec3.scaleAndAdd(
-			this.velocity,
-			this.velocity,
-			this.velocity,
-			this.deceleration * dt
-		);
+		const velocity = vec3.copy(vec3.create(), this.velocity);
+		vec3.scale(this.velocity, this.velocity, 1 - this.deceleration * dt);
+
+		const deltaVelocity = vec3.sub(vec3.create(), velocity, this.velocity);
 
 		const movement = vec3.create();
 		const transform = this.node.getComponentOfType(Transform);
 
-		vec3.scale(movement, this.velocity, dt);
+		vec3.scale(movement, this.velocity, this.deceleration * dt);
 		vec3.add(transform.translation, transform.translation, movement);
+		vec3.add(this.position, this.position, deltaVelocity);
 	}
 
 	update(t, dt) {
@@ -77,12 +82,9 @@ export class Ball extends Component {
 	}
 
 	pocketAnimation(dt) {
+		this.velocity = vec3.fromValues(0, dt, 0);
 		const transform = this.node.getComponentOfType(Transform);
 
-		vec3.sub(
-			transform.translation,
-			transform.translation,
-			vec3.fromValues(0, dt, 0)
-		);
+		vec3.sub(transform.translation, transform.translation, this.velocity);
 	}
 }
