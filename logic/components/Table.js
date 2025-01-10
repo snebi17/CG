@@ -2,6 +2,7 @@ import { Transform } from "../../engine/core.js";
 import { getGlobalModelMatrix } from "../../engine/core/SceneUtils.js";
 import { vec3 } from "../../lib/glm.js";
 import { Ball } from "./Ball.js";
+import { Edge } from "./Edge.js";
 
 export class Table {
 	constructor(
@@ -15,6 +16,8 @@ export class Table {
 		this.pockets = pockets;
 		this.frictionCoefficient = frictionCoefficient;
 
+		this.transform;
+
 		this.movingBalls = movingBalls;
 		this.pocketedBalls = pocketedBalls;
 	}
@@ -22,7 +25,7 @@ export class Table {
 	update(t, dt) {
 		this.balls.forEach((ball) => {
 			this.balls.forEach((other) => {
-				if (other != ball) {
+				if (ball != other) {
 					this.handleBounce(dt, ball, other);
 				}
 			});
@@ -37,20 +40,23 @@ export class Table {
 	}
 
 	handlePocketing(ball, pocket) {
-		if (this.resolveCollision(ball.node, pocket.node)) {
-			console.log(pocket);
-			this.pocketedBalls.push(ball);
-		}
+		// const ballBox = this.getTransformedAABB(ball.node);
+		// const pocketBox = this.getTransformedAABB(pocket.node);
+		// const isColliding = this.aabbIntersection(ballBox, pocketBox);
+		// if (isColliding) {
+		// 	ball.isPocketed = true;
+		// 	this.pocketedBalls.push(ball);
+		// }
 	}
 
 	handleBounce(dt, ball, other) {
 		if (this.resolveCollision(ball.node, other.node)) {
-			const velocity = vec3.create();
-			vec3.copy(velocity, ball.velocity);
+			const velocity = vec3.copy(vec3.create(), ball.velocity);
 			const speed = vec3.length(velocity);
 
 			if (speed < 0.01) {
-				vec3.set(velocity, 0, 0, 0);
+				vec3.zero(velocity);
+				ball.velocity = velocity;
 				return;
 			}
 
@@ -59,34 +65,80 @@ export class Table {
 				 * Ball to ball collision
 				 * Calculate kinetic energy and momentum the ball gives to another ball when collision occurs
 				 */
-				const negatedVelocity = vec3.create();
-				vec3.negate(negatedVelocity, velocity);
-				vec3.scale(negatedVelocity, negatedVelocity, 0.8);
-				ball.hit(negatedVelocity);
-				const conservedVelocity = vec3.create();
-				vec3.scale(conservedVelocity, velocity, 0.9);
-				other.hit(conservedVelocity);
-			} else {
+				// the angle between balls position vector on X axis
+				// console.log(ball.position);
+				console.log(other.position);
+				const ballPosition = vec3.copy(vec3.create(), ball.position);
+				const otherPosition = vec3.copy(vec3.create(), other.position);
+
+				// Compute the vector between the centers
+				const collisionVector = vec3.create();
+				vec3.subtract(collisionVector, otherPosition, ballPosition);
+
+				// Normalize the collision vector
+				const collisionNormal = vec3.create();
+				vec3.normalize(collisionNormal, collisionVector);
+
+				// Compute the cosine of the angle
+				const speed = vec3.length(velocity);
+				const cosTheta = vec3.dot(velocity, collisionNormal) / speed;
+
+				// Compute the angle (in radians)
+				const angle = Math.acos(cosTheta);
+				console.log(angle);
+				// const phi = Math.random();
+				// // the angle between balls p
+				// position vector on Z axis
+				// const theta = Math.random();
+
+				// // get collision normal (vector that starts from ball's position to other's position)
+				// const negatedVelocity = vec3.create();
+				// vec3.negate(negatedVelocity, velocity);
+				// vec3.scale(negatedVelocity, negatedVelocity, 0.8);
+				// vec3.rotateX(
+				// 	negatedVelocity,
+				// 	negatedVelocity,
+				// 	ball.position,
+				// 	phi
+				// );
+				// vec3.rotateZ(
+				// 	negatedVelocity,
+				// 	negatedVelocity,
+				// 	ball.position,
+				// 	theta
+				// );
+
+				// ball.hit(negatedVelocity);
+				// const conservedVelocity = vec3.create();
+				// vec3.scale(conservedVelocity, velocity, 0.8);
+				// vec3.rotateX(
+				// 	conservedVelocity,
+				// 	conservedVelocity,
+				// 	ball.position,
+				// 	phi
+				// );
+				// vec3.rotateZ(
+				// 	conservedVelocity,
+				// 	conservedVelocity,
+				// 	ball.position,
+				// 	theta
+				// );
+				// other.hit(conservedVelocity);
+			} else if (other instanceof Edge) {
 				/**
 				 * Ball to edge collision
 				 * Calculate velocity and direction in which the ball should move after collision with an edge
 				 */
-				const normal = other.normal;
+				const normal = vec3.copy(vec3.create(), other.normal);
 				const dotProduct = vec3.dot(velocity, normal);
 				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
 				vec3.scale(velocity, velocity, 1 - this.frictionCoefficient);
-				vec3.scale(velocity, velocity, 1 - ball.deceleration * dt);
-				const clampedSpeed = Math.min(speed, vec3.length(velocity));
-				vec3.scale(
-					velocity,
-					velocity,
-					clampedSpeed / vec3.length(velocity)
-				);
-
 				ball.hit(velocity);
 			}
 		}
 	}
+
+	calculateCollisionAngle(ball, other) {}
 
 	intervalIntersection(min1, max1, min2, max2) {
 		return !(min1 > max2 || min2 > max1);
