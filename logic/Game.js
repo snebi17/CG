@@ -13,6 +13,8 @@ import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
 import { BallType, GameState } from "./common/Enums.js";
 import { vec3, quat } from "../lib/glm.js";
 
+import { getGlobalModelMatrix, getLocalModelMatrix } from "../engine/core/SceneUtils.js";
+
 class Player {
 	constructor(id, type) {
 		this.id = id;
@@ -185,10 +187,12 @@ export class Game {
 		// quat.rotateY(rotation, rotation, 1.5);
 		// quat.rotateX(rotation, rotation, 0.0);
 		// transform.rotation = rotation;
-		console.log(this.cue.node.getComponentsOfType(Transform));
-		let cuePos = this.cue.node.getComponentOfType(Transform).translation;
-		this.controller.setTarget([cuePos[2], cuePos[0], cuePos[1]]);
-		// console.log(this.camera.getComponentOfType(Transform).matrix);
+		
+
+		console.log(getGlobalModelMatrix(this.white.node));
+		let whitePos = this.white.node.getComponentOfType(Transform).translation;
+		this.controller.setTarget([whitePos[0], whitePos[1], whitePos[2]]);
+		console.log(this.white.position);
 
 	}
 
