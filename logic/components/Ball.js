@@ -17,15 +17,13 @@ export class Ball extends Component {
 		node,
 		{
 			ballMapping = BallMapping[id],
-
 			velocity = vec3.create(),
 			deceleration = 0.4,
-
 			isMoving = false,
 			isPocketed = false,
 		} = {}
 	) {
-		super(id, node, false);
+		super(id, node);
 
 		this.color = ballMapping.color;
 		this.type = ballMapping.type;
@@ -33,7 +31,6 @@ export class Ball extends Component {
 
 		this.velocity = velocity;
 		this.deceleration = deceleration;
-
 		this.isMoving = isMoving;
 		this.isPocketed = isPocketed;
 	}
@@ -49,6 +46,7 @@ export class Ball extends Component {
 			return;
 		}
 
+		this.velocity[1] = 0;
 		const speed = vec3.length(this.velocity);
 		if (speed < 0.015) {
 			vec3.zero(this.velocity);
@@ -66,6 +64,8 @@ export class Ball extends Component {
 
 		const movement = vec3.create();
 		const transform = this.node.getComponentOfType(Transform);
+
+		transform[1] = 0;
 
 		vec3.scale(movement, this.velocity, this.deceleration * dt);
 		vec3.add(transform.translation, transform.translation, movement);

@@ -14,27 +14,20 @@ export class Table {
 			pocketedBalls = [],
 			frictionCoefficient = 0.2,
 			isStationary = true,
+			firstHit = null
 		} = {}
 	) {
 		this.balls = balls;
 		this.edges = edges;
 		this.pockets = pockets;
 		this.frictionCoefficient = frictionCoefficient;
-		this.isStationary = isStationary;
-
-		this.bounds = [
-			[0.38, 0, 0.45],
-			[0.38, 0, -0.45],
-			[-1.5, 0, 0.45],
-			[-1.5, 0, -0.45],
-		];
-
-		this.partitions = [[], [], [], []];
-
+		
 		this.transform;
-
+		
 		this.movingBalls = movingBalls;
 		this.pocketedBalls = pocketedBalls;
+		this.firstHit = firstHit;
+		this.isStationary = isStationary;
 	}
 
 	update(t, dt) {
@@ -66,7 +59,10 @@ export class Table {
 	handlePocketing(ball, pocket) {
 		if (this.resolveCollision(ball.node, pocket.node)) {
 			// ball.isPocketed = true;
-			// this.pocketedBalls.push(ball);
+			console.log(pocket);
+			if (!this.pocketedBalls.includes(ball)) {
+				this.pocketedBalls.push(ball);
+			}
 		}
 	}
 
@@ -84,6 +80,10 @@ export class Table {
 				const normal = vec3.create();
 				vec3.subtract(normal, other.position, ball.position);
 				vec3.normalize(normal, normal);
+
+				if (this.firstHit == null) {
+					this.firstHit = other;
+				}
 
 				if (other.isMoving) {
 					const dot1 = vec3.dot(ball.velocity, normal);
@@ -121,7 +121,7 @@ export class Table {
 					normal,
 					-2 * dotProduct
 				);
-        
+
 				vec3.scale(
 					ball.velocity,
 					ball.velocity,
@@ -145,7 +145,16 @@ export class Table {
 			}
 		}
 	}
-  
+
+	reset() {
+		this.firstHit = null;
+		this.pocketedBalls = [];
+	}
+
+	getStatus() {
+		return { firstHit: this.firstHit, pocketedBalls: this.pocketedBalls };
+	}
+
 	intervalIntersection(min1, max1, min2, max2) {
 		return !(min1 > max2 || min2 > max1);
 	}
