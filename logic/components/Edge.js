@@ -5,7 +5,7 @@ import { Component } from "./Component.js";
 
 export class Edge extends Component {
 	constructor(id, node) {
-		super(id, node, true);
+		super(id, node);
 
 		this.position = EdgeMapping[this.id];
 		this.normal = EdgeNormalMapping[this.position];

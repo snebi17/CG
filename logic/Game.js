@@ -40,12 +40,12 @@ export class Game {
 		renderer,
 		domElement,
 		{
-			gameState = GameState.HITTING,
+			gameState = GameState.STARTED,
 			gameType = null,
-			player = null,
 			players = null,
 			currentPlayer = -1,
-			pocketedBalls = [],
+			breaking = true,
+			winner = null,
 			keys = {},
 		} = {}
 	) {
@@ -59,19 +59,14 @@ export class Game {
 		this.gameState = gameState;
 		this.gameType = gameType;
 
-		// player - player object if singleplayer
 		// players - array of players if multiplayer
 		// currentPlayer - used for switching players on each turn
-		this.player = player;
 		this.players = players;
 		this.currentPlayer = currentPlayer;
-		this.pocketedBalls = pocketedBalls;
+		this.breaking = breaking;
+		this.winner = winner;
 		this.keys = keys;
 		this.setComponents();
-
-		// this.camera.addComponent(
-		//      new FirstPersonController(this.camera, this.domElement)
-		// );
 
 		this.camera.addComponent(
 			new OrbitController2(this.camera, this.domElement)
@@ -83,18 +78,6 @@ export class Game {
 
 		this.initHandlers();
 	}
-
-	/**
-	 * Game rules:
-	 * #1 - Flip a coin and start if multiplayer, else just start
-	 * #2 - Breaking the balls - sets the type for players
-	 * #3 - In progress:
-	 * 		+ If the first ball hit with white is of player's type and the correct type ball(s) go inside the hole -> points point and player continues
-	 * 		+ If the first ball hit isn't the player's type -> points for the player of the type that (if it) goes in and switch players
-	 * 		+ If the white goes in -> place the ball anywhere on the line
-	 * #4 - Endgame:
-	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
-	 */
 
 	initHandlers() {
 		this.keydownHandler = this.keydownHandler.bind(this);
@@ -135,10 +118,9 @@ export class Game {
 
 	start() {
 		this.coinFlip();
-		const whitePos =
-			this.white.node.getComponentOfType(Transform).translation;
+		const translation = this.white.node.getComponentOfType(Transform).translation;
+		const whitePos = translation;
 		this.controller.setTarget(whitePos);
-		this.gameState = GameState.STARTED;
 	}
 
 	update(time, dt) {
@@ -150,7 +132,7 @@ export class Game {
 			this.table.update(time, dt);
 
 			if (this.table.isStationary) {
-				this.gameState = GameState.IN_PROGRESS;
+				this.checkForFaults();
 			}
 		}
 
@@ -161,9 +143,12 @@ export class Game {
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
 				this.hit();
-				console.log("In progress space");
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
+		}
+
+		if (this.gameState == GameState.FINISHED) {
+			alert(`Winner is: ${this.winner}`);
 		}
 
 		this.scene.traverse((node) => {
@@ -171,25 +156,6 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
-
-		// DODATEK KAMERA
-
-		// const transform = this.camera.getComponentOfType(Transform);
-		// const rotation = quat.create();
-		// quat.rotateY(rotation, rotation, 1.5);
-		// quat.rotateX(rotation, rotation, 0.0);
-		// transform.rotation = rotation;
-
-		// console.log(this.white.node.getComponentOfType(Transform).translation);
-
-		// console.log(
-		// 	this.balls.at(2).node.getComponentOfType(Transform).translation
-		// );
-		// const whitePos =
-		// 	this.white.node.getComponentOfType(Transform).translation;
-		// // this.controller.setTarget(whitePos);
-		// this.controller.setTarget(whitePos);
-		// console.log(this.camera.getComponentOfType(Transform).matrix);
 	}
 
 	render() {
@@ -213,22 +179,95 @@ export class Game {
 		}
 	}
 
-	setCueBall() {}
+	setCueBall() {
+		// TODO
+	}
 
 	switchPlayer() {
 		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
 	}
 
+	/**
+	 * Game rules:
+	 * #1 - Flip a coin and start if multiplayer, else just start
+	 * #2 - Breaking the balls - sets the type for players
+	 * #3 - In progress:
+	 * 		+ If the first ball hit with white is of player's type and the correct type ball(s) go inside the hole -> points point and player continues
+	 * 		+ If the first ball hit isn't the player's type -> points for the player of the type that (if it) goes in and switch players
+	 * 		+ If the white goes in -> place the ball anywhere on the line
+	 * #4 - Endgame:
+	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
+	 */
 	checkForFaults() {
+		const status = this.table.getStatus();
+
+		if (status.pocketedBalls.length == 0) {
+			this.switchPlayer();
+			this.gameState = GameState.IN_PROGRESS;
+			this.table.reset();
+			return;
+		}
+
+		if (this.breaking) {
+			const type = status.pocketedBalls[0].type;
+
+			// if (type == BallType.EIGHT) {
+			// 	this.gameState = 
+			// }
+			if (type == BallType.SOLID) {
+				this.players[this.currentPlayer].type = BallType.SOLID;
+				this.players[this.currentPlayer == 1 ? 0 : 1].type = BallType.STRIPES;
+			} else {
+				this.players[this.currentPlayer].type = BallType.STRIPES;
+				this.players[this.currentPlayer == 1 ? 0 : 1].type = BallType.SOLID;
+			}
+
+			this.breaking = false;
+		}
+
+		if (this.checkEight(status.pocketedBalls)) {
+			if (this.players[this.currentPlayer].score == 7) {
+				winner = this.players[this.currentPlayer];
+			} else {
+				winner = this.players[this.currentPlayer == 1 ? 0 : 1];
+			}
+			this.gameState = GameState.FINISHED;
+			return;
+		}
+
+		if (!this.checkType(firstHit) || this.checkWhite(status.pocketedBalls)) {
+			this.updatePoints(status.pocketedBalls);
+			this.switchPlayer();
+			this.gameState = GameState.BALL_IN_HAND;
+			this.table.reset();
+			return;
+		}
+		
+		this.updatePoints(status.pocketedBalls);
 		this.gameState = GameState.IN_PROGRESS;
+		this.table.reset();
 	}
 
-	resolveCollision(time, dt) {
-		this.pocketedBalls = this.balls.filter((ball) => ball.isPocketed);
+	checkEight(balls) {
+		return balls.includes(ball => ball.type == BallType.EIGHT);
+	}
 
-		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
-		if (this.movingBalls.length == 0) {
-			this.checkForFaults();
+	checkWhite(balls) {
+		return balls.includes(ball => ball.type == BallType.CUE);
+	}
+
+	checkType(ball) {
+		return this.players[currentPlayer].type == ball.type;
+	}
+
+	getBallsOfType(balls, type) {
+		return balls.filter(ball => ball.type == type);
+	}
+
+	updatePoints(balls) {
+		for (let player of this.players) {
+			const n = balls.filter(ball => ball.type == player.type).length;
+			player.points += n;
 		}
 	}
 }

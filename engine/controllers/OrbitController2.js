@@ -7,9 +7,10 @@ export class OrbitController2 {
 		domElement,
 		{
 			rotation = [0, 0, 0, 1],
-			distance = 1,
-			moveSensitivity = 0.004,
+			distance = [0, .2, 1.2],
+			moveSensitivity = 0.0015,
 			zoomSensitivity = 0.002,
+			keys = {}
 		} = {}
 	) {
 		this.node = node;
@@ -21,6 +22,8 @@ export class OrbitController2 {
 		this.moveSensitivity = moveSensitivity;
 		this.zoomSensitivity = zoomSensitivity;
 
+		this.keys = keys,
+
 		this.initHandlers();
 
 		// **CHANGE**: Added target property to define the object to orbit around
@@ -30,61 +33,34 @@ export class OrbitController2 {
 	}
 
 	initHandlers() {
-		this.pointerdownHandler = this.pointerdownHandler.bind(this);
-		this.pointerupHandler = this.pointerupHandler.bind(this);
-		this.pointermoveHandler = this.pointermoveHandler.bind(this);
 		this.wheelHandler = this.wheelHandler.bind(this);
 
-		this.domElement.addEventListener(
-			"pointerdown",
-			this.pointerdownHandler
-		);
-		this.domElement.addEventListener("wheel", this.wheelHandler);
+		this.keydownHandler = this.keydownHandler.bind(this);
+		this.keyupHandler = this.keyupHandler.bind(this);
+
+		const element = this.domElement;
+		const doc = element.ownerDocument;
+
+		doc.addEventListener("keydown", this.keydownHandler);
+		doc.addEventListener("keyup", this.keyupHandler);
+
+		element.addEventListener("wheel", this.wheelHandler);
 	}
 
-	pointerdownHandler(e) {
-		this.domElement.setPointerCapture(e.pointerId);
-		this.domElement.requestPointerLock();
-		this.domElement.removeEventListener(
-			"pointerdown",
-			this.pointerdownHandler
-		);
-		this.domElement.addEventListener("pointerup", this.pointerupHandler);
-		this.domElement.addEventListener(
-			"pointermove",
-			this.pointermoveHandler
-		);
+	keydownHandler(e) {
+		this.keys[e.code] = true;
 	}
 
-	pointerupHandler(e) {
-		this.domElement.releasePointerCapture(e.pointerId);
-		this.domElement.ownerDocument.exitPointerLock();
-		this.domElement.addEventListener(
-			"pointerdown",
-			this.pointerdownHandler
-		);
-		this.domElement.removeEventListener("pointerup", this.pointerupHandler);
-		this.domElement.removeEventListener(
-			"pointermove",
-			this.pointermoveHandler
-		);
-	}
-
-	pointermoveHandler(e) {
-		const dx = e.movementX;
-		const dy = e.movementY;
-
-		quat.rotateX(this.rotation, this.rotation, -dy * this.moveSensitivity);
-		quat.rotateY(this.rotation, this.rotation, -dx * this.moveSensitivity);
-		quat.normalize(this.rotation, this.rotation);
+	keyupHandler(e) {
+		this.keys[e.code] = false;
 	}
 
 	wheelHandler(e) {
-		this.distance *= Math.exp(this.zoomSensitivity * e.deltaY);
+		this.distance[2] *= Math.exp(this.zoomSensitivity * e.deltaY);
 	}
 
 	// **CHANGE**: Updated the `update` method to orbit around the target
-	update() {
+	update(dt) {
 		const transform = this.node.getComponentOfType(Transform);
 		if (!transform) {
 			return;
@@ -104,11 +80,23 @@ export class OrbitController2 {
 		} else {
 			throw new Error("OrbitController: Invalid target type.");
 		}
+		
+		let dx = 0;
+
+		if (this.keys["KeyD"]) {
+			dx += dt * this.moveSensitivity;
+		}
+		if (this.keys["KeyA"]) {
+			dx -= dt * this.moveSensitivity;
+		}
+
+		quat.rotateY(this.rotation, this.rotation, -dx);
+		quat.normalize(this.rotation, this.rotation);
 
 		// Create matrices for transformation
 		const targetMatrix = mat4.create();
 		const rotationMatrix = mat4.create();
-		const translationMatrix = mat4.create();
+		// const translationMatrix = mat4.create();
 
 		// Translate to the target position
 		mat4.translate(targetMatrix, targetMatrix, targetPosition);
@@ -118,7 +106,7 @@ export class OrbitController2 {
 		mat4.multiply(targetMatrix, targetMatrix, rotationMatrix);
 
 		// Move outward by the orbit distance
-		mat4.translate(targetMatrix, targetMatrix, [0, 0, this.distance]);
+		mat4.translate(targetMatrix, targetMatrix, this.distance);
 
 		// **CHANGE**: Extract translation and rotation from the resulting matrix
 		mat4.getTranslation(transform.translation, targetMatrix);
