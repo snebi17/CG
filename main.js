@@ -11,7 +11,9 @@ const renderer = new Renderer(canvas);
 await renderer.initialize();
 
 const loader = new GLTFLoader();
-await loader.load(new URL("../models/table/table.gltf", import.meta.url));
+// await loader.load(new URL("../models/table/table.gltf", import.meta.url));
+await loader.load(new URL("models/table_update/table.gltf", import.meta.url));
+
 
 const scene = loader.loadScene(loader.defaultScene);
 if (!scene) {
@@ -43,7 +45,6 @@ function resize({ displaySize: { width, height } }) {
 
 const game = new Game(scene, camera, renderer, canvas);
 
-console.log(game.cue.node.getComponentOfType(Transform));
 
 new ResizeSystem({ canvas, resize }).start();
 new UpdateSystem(game).start();
