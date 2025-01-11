@@ -57,9 +57,9 @@ export class Table {
 	}
 
 	handlePocketing(ball, pocket) {
-		if (this.resolveCollision(ball.node, pocket.node)) {
-			// ball.isPocketed = true;
-			console.log(pocket);
+		if (pocket.checkCollision(ball)) {
+			ball.isPocketed = true;
+			console.log(ball);
 			if (!this.pocketedBalls.includes(ball)) {
 				this.pocketedBalls.push(ball);
 			}

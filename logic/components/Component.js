@@ -1,16 +1,8 @@
 import {
 	calculateAxisAlignedBoundingBox,
 	mergeAxisAlignedBoundingBoxes,
-	transformMesh,
 } from "../../engine/core/MeshUtils.js";
 
-import {
-	getGlobalModelMatrix,
-	getGlobalViewMatrix,
-	getLocalModelMatrix,
-	getLocalViewMatrix,
-} from "../../engine/core/SceneUtils.js";
-import { mat4, vec3 } from "../../lib/glm.js";
 
 import { Model, Transform } from "../../engine/core.js";
 

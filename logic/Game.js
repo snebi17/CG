@@ -7,7 +7,7 @@ import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
 
-import { GameState } from "./common/Enums.js";
+import { GameState, BallType } from "./common/Enums.js";
 import { vec3 } from "../lib/glm.js";
 
 class Player {
@@ -34,7 +34,7 @@ export class Game {
 		{
 			gameState = GameState.STARTED,
 			gameType = null,
-			players = null,
+			players = [new Player(0, null), new Player(1, null)],
 			currentPlayer = -1,
 			breaking = true,
 			winner = null,
@@ -58,7 +58,7 @@ export class Game {
 		this.breaking = breaking;
 		this.winner = winner;
 		this.keys = keys;
-		this.setComponents();
+		this.initComponents();
 
 		this.camera.addComponent(
 			new OrbitController2(this.camera, this.domElement)
@@ -82,18 +82,22 @@ export class Game {
 		doc.addEventListener("keyup", this.keyupHandler);
 	}
 
-	setComponents() {
+	initComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
 
 		this.balls = this.scene.children
 			.slice(20, 36)
 			.map((node, i) => new Ball(i, node));
 
+		for (const ball of this.balls) {
+			console.log
+		}
+
 		this.white = this.balls.at(0);
 
 		this.pockets = this.scene.children
-			.slice(7, 14)
-			.map((node, i) => new Pocket(i, node));
+		.slice(7, 13)
+		.map((node, i) => new Pocket(i, node));
 
 		this.edges = this.scene.children
 			.slice(13, 19)
@@ -130,6 +134,7 @@ export class Game {
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
 			this.setCueBall();
+			this.gameState = GameState.IN_PROGRESS;
 		}
 
 		if (this.gameState == GameState.IN_PROGRESS) {
@@ -172,7 +177,7 @@ export class Game {
 	}
 
 	setCueBall() {
-		// TODO
+		this.white.set();
 	}
 
 	switchPlayer() {
@@ -201,11 +206,9 @@ export class Game {
 		}
 
 		if (this.breaking) {
+			console.log(`Successful break by player ${this.players[this.currentPlayer]}`);
 			const type = status.pocketedBalls[0].type;
-
-			// if (type == BallType.EIGHT) {
-			// 	this.gameState = 
-			// }
+			console.log(`Pocketed ball's type: ${type}`);
 			if (type == BallType.SOLID) {
 				this.players[this.currentPlayer].type = BallType.SOLID;
 				this.players[this.currentPlayer == 1 ? 0 : 1].type = BallType.STRIPES;
@@ -213,6 +216,8 @@ export class Game {
 				this.players[this.currentPlayer].type = BallType.STRIPES;
 				this.players[this.currentPlayer == 1 ? 0 : 1].type = BallType.SOLID;
 			}
+			
+			console.log(`His type is ${this.players[this.currentPlayer].type}`);
 
 			this.breaking = false;
 		}
@@ -227,7 +232,15 @@ export class Game {
 			return;
 		}
 
-		if (!this.checkType(firstHit) || this.checkWhite(status.pocketedBalls)) {
+		if (this.checkWhite(status.pocketedBalls)) {
+			this.updatePoints(status.pocketedBalls.filter(ball => ball.type != BallType.CUE));
+			this.switchPlayer();
+			this.gameState = GameState.BALL_IN_HAND;
+			this.table.reset();
+			return;
+		}
+
+		if (!this.checkType(status.firstHit)) {
 			this.updatePoints(status.pocketedBalls);
 			this.switchPlayer();
 			this.gameState = GameState.BALL_IN_HAND;
@@ -249,7 +262,7 @@ export class Game {
 	}
 
 	checkType(ball) {
-		return this.players[currentPlayer].type == ball.type;
+		return this.players[this.currentPlayer].type == ball.type;
 	}
 
 	getBallsOfType(balls, type) {
@@ -260,6 +273,16 @@ export class Game {
 		for (let player of this.players) {
 			const n = balls.filter(ball => ball.type == player.type).length;
 			player.points += n;
+		}
+
+		this.clearPocketed(balls);
+	}
+
+	clearPocketed(balls) {
+		for (const ball of balls) {
+			if (ball.type != BallType.CUE) {
+				this.scene.removeChild(ball.node);
+			}
 		}
 	}
 }

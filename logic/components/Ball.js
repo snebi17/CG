@@ -21,6 +21,7 @@ export class Ball extends Component {
 			deceleration = 0.4,
 			isMoving = false,
 			isPocketed = false,
+			initialPosition = vec3.copy(vec3.create(), node.getComponentOfType(Transform).translation),
 		} = {}
 	) {
 		super(id, node);
@@ -33,6 +34,7 @@ export class Ball extends Component {
 		this.deceleration = deceleration;
 		this.isMoving = isMoving;
 		this.isPocketed = isPocketed;
+		this.initialPosition = initialPosition;
 	}
 
 	hit(velocity) {
@@ -56,12 +58,6 @@ export class Ball extends Component {
 
 		vec3.scale(this.velocity, this.velocity, 1 - this.deceleration * dt);
 
-		// const deltaVelocity = vec3.sub(
-		// 	vec3.create(),
-		// 	this.velocity,
-		// 	this.velocity
-		// );
-
 		const movement = vec3.create();
 		const transform = this.node.getComponentOfType(Transform);
 
@@ -69,7 +65,6 @@ export class Ball extends Component {
 
 		vec3.scale(movement, this.velocity, this.deceleration * dt);
 		vec3.add(transform.translation, transform.translation, movement);
-		// vec3.add(this.position, this.position, deltaVelocity);
 	}
 
 	update(t, dt) {
@@ -89,5 +84,9 @@ export class Ball extends Component {
 		const transform = this.node.getComponentOfType(Transform);
 
 		vec3.sub(transform.translation, transform.translation, this.velocity);
+	}
+
+	set() {
+		this.node.getComponentOfType(Transform).translation = this.initialPosition;
 	}
 }
