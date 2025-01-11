@@ -6,7 +6,7 @@ export class OrbitController2 {
 		node,
 		domElement,
 		{
-			rotation = [0, 0, 0, 1],
+			rotation = [0, 0.7, 0, 0.7],
 			distance = 1,
 			moveSensitivity = 0.004,
 			zoomSensitivity = 0.002,
@@ -123,6 +123,7 @@ export class OrbitController2 {
 		// **CHANGE**: Extract translation and rotation from the resulting matrix
 		mat4.getTranslation(transform.translation, targetMatrix);
 		mat4.getRotation(transform.rotation, targetMatrix);
+		console.log(this.rotation);
 	}
 
 	// **CHANGE**: Added method to set the orbit target
