@@ -45,10 +45,8 @@ const PocketLocation = {
 };
 
 const EdgeLocation = {
-	LEFT_LOWER: "left lower",
-	LEFT_UPPER: "left upper",
-	RIGHT_LOWER: "right lower",
-	RIGHT_UPPER: "right upper",
+	LEFT: "left",
+	RIGHT: "right",
 	UPPER: "upper",
 	LOWER: "lower",
 };
