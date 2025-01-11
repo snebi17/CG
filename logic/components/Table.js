@@ -16,6 +16,15 @@ export class Table {
 		this.pockets = pockets;
 		this.frictionCoefficient = frictionCoefficient;
 
+		this.bounds = [
+			[0.38, 0, 0.45],
+			[0.38, 0, -0.45],
+			[-1.5, 0, 0.45],
+			[-1.5, 0, -0.45],
+		];
+
+		this.partitions = [[], [], [], []];
+
 		this.transform;
 
 		this.movingBalls = movingBalls;
@@ -24,17 +33,22 @@ export class Table {
 
 	update(t, dt) {
 		this.balls.forEach((ball) => {
-			this.balls.forEach((other) => {
-				if (ball != other) {
-					this.handleBounce(dt, ball, other);
+			if ()
+		});
+
+		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
+		this.movingBalls.forEach((movingBall) => {
+			this.balls.forEach((ball) => {
+				if (movingBall != ball) {
+					this.handleBounce(dt, movingBall, ball);
 				}
 			});
 
 			this.edges.forEach((edge) => {
-				this.handleBounce(dt, ball, edge);
+				this.handleBounce(dt, movingBall, edge);
 			});
 			this.pockets.forEach((pocket) => {
-				this.handlePocketing(ball, pocket);
+				this.handlePocketing(movingBall, pocket);
 			});
 		});
 	}
@@ -50,8 +64,9 @@ export class Table {
 		if (this.resolveCollision(ball.node, other.node)) {
 			const speed = vec3.length(ball.velocity);
 
-			if (speed < 0.01) {
+			if (speed < 0.015) {
 				vec3.zero(ball.velocity);
+				ball.isMoving = false;
 				return;
 			}
 
