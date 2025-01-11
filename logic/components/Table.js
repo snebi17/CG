@@ -51,6 +51,7 @@ export class Table {
 
 		if (this.movingBalls.length == 0) {
 			this.isStationary = true;
+			console.log(this.pocketedBalls);
 			return;
 		}
 
@@ -64,10 +65,10 @@ export class Table {
 			});
 
 			this.edges.forEach((edge) => {
-				this.handleBounce(dt, movingBall, edge);
+				this.handleBounce(dt, ball, edge);
 			});
 			this.pockets.forEach((pocket) => {
-				this.handlePocketing(movingBall, pocket);
+				this.handlePocketing(ball, pocket);
 			});
 		});
 	}
@@ -75,7 +76,9 @@ export class Table {
 	handlePocketing(ball, pocket) {
 		if (this.resolveCollision(ball.node, pocket.node)) {
 			// ball.isPocketed = true;
-			// this.pocketedBalls.push(ball);
+			if (!this.pocketedBalls.includes(ball)) {
+				this.pocketedBalls.push(ball);
+			}
 		}
 	}
 
