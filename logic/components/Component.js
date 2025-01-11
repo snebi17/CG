@@ -30,7 +30,6 @@ export class Component {
 		);
 
 		this.node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
-
 		this.position = this.node.getComponentOfType(Transform).translation;
 	}
 }

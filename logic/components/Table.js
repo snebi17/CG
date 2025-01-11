@@ -121,13 +121,12 @@ export class Table {
 					normal,
 					-2 * dotProduct
 				);
-
+        
 				vec3.scale(
 					ball.velocity,
 					ball.velocity,
 					1 - this.frictionCoefficient
 				);
-
 				vec3.scale(
 					ball.velocity,
 					ball.velocity,
@@ -146,7 +145,7 @@ export class Table {
 			}
 		}
 	}
-
+  
 	intervalIntersection(min1, max1, min2, max2) {
 		return !(min1 > max2 || min2 > max1);
 	}
