@@ -1,4 +1,4 @@
-import { quat, vec3 } from "glm";
+import { quat, vec3, mat4 } from "glm";
 
 import { Transform } from "../core/Transform.js";
 
@@ -8,7 +8,7 @@ export class OrbitController {
 		domElement,
 		{
 			rotation = [0, 0, 0, 1],
-			distance = 2,
+			distance = 1,
 			moveSensitivity = 0.004,
 			zoomSensitivity = 0.002,
 		} = {}

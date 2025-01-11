@@ -30,11 +30,6 @@ export class Component {
 		);
 
 		this.node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
-
-		const aabb = this.node.aabb;
-		const x = (aabb.max[0] + aabb.min[0]) / 2;
-		const z = (aabb.max[1] + aabb.min[1]) / 2;
-
-		this.position = vec3.fromValues(x, 0, z);
+		this.position = this.node.getComponentOfType(Transform).translation;
 	}
 }
