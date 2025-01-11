@@ -6,7 +6,7 @@ export class OrbitController2 {
 		node,
 		domElement,
 		{
-			rotation = [0, 0.7, 0, 0.7],
+			rotation = [0, 0, 0, 1],
 			distance = 1,
 			moveSensitivity = 0.004,
 			zoomSensitivity = 0.002,
