@@ -6,15 +6,17 @@ import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { Component } from "./components/Component.js";
+import { mat4 } from "../lib/glm.js";
+import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
+import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
+
+import { BallType, GameState } from "./common/Enums.js";
+import { vec3, quat } from "../lib/glm.js";
 import {
 	getGlobalModelMatrix,
 	getLocalModelMatrix,
+	getGlobalViewMatrix,
 } from "../engine/core/SceneUtils.js";
-import { mat4 } from "../lib/glm.js";
-import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
-
-import { BallType, GameState } from "./common/Enums.js";
-import { vec3 } from "../lib/glm.js";
 
 class Player {
 	constructor(id, type) {
@@ -66,10 +68,18 @@ export class Game {
 		this.pocketedBalls = pocketedBalls;
 		this.keys = keys;
 		this.setComponents();
+
+		// this.camera.addComponent(
+		//      new FirstPersonController(this.camera, this.domElement)
+		// );
+
 		this.camera.addComponent(
-			new FirstPersonController(this.camera, this.domElement)
+			new OrbitController2(this.camera, this.domElement)
 		);
 		this.table = new Table(this.balls, this.edges, this.pockets);
+
+		// DODAL CONTROLLER
+		this.controller = this.camera.getComponentOfType(OrbitController2);
 
 		this.initHandlers();
 	}
@@ -125,6 +135,9 @@ export class Game {
 
 	start() {
 		this.coinFlip();
+		const whitePos =
+			this.white.node.getComponentOfType(Transform).translation;
+		this.controller.setTarget(whitePos);
 		this.gameState = GameState.STARTED;
 	}
 
@@ -135,6 +148,10 @@ export class Game {
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.table.update(time, dt);
+
+			if (this.table.isStationary) {
+				this.gameState = GameState.IN_PROGRESS;
+			}
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
@@ -143,8 +160,8 @@ export class Game {
 
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
-				const velocity = vec3.random(vec3.create(), 2);
-				this.white.hit(velocity);
+				this.hit();
+				console.log("In progress space");
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
@@ -154,6 +171,25 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
+
+		// DODATEK KAMERA
+
+		// const transform = this.camera.getComponentOfType(Transform);
+		// const rotation = quat.create();
+		// quat.rotateY(rotation, rotation, 1.5);
+		// quat.rotateX(rotation, rotation, 0.0);
+		// transform.rotation = rotation;
+
+		// console.log(this.white.node.getComponentOfType(Transform).translation);
+
+		// console.log(
+		// 	this.balls.at(2).node.getComponentOfType(Transform).translation
+		// );
+		// const whitePos =
+		// 	this.white.node.getComponentOfType(Transform).translation;
+		// // this.controller.setTarget(whitePos);
+		// this.controller.setTarget(whitePos);
+		// console.log(this.camera.getComponentOfType(Transform).matrix);
 	}
 
 	render() {
@@ -164,12 +200,15 @@ export class Game {
 		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
 	}
 
+	hit() {
+		const velocity = vec3.fromValues(-1, 0, 0);
+		vec3.scale(velocity, velocity, 4);
+		this.white.hit(velocity);
+	}
+
 	break() {
 		if (this.keys["Space"]) {
-			const velocity = vec3.fromValues(-1, 0, 0);
-			const speed = 5;
-			vec3.scale(velocity, velocity, speed);
-			this.white.hit(velocity);
+			this.hit();
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
 	}
