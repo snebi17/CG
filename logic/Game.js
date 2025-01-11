@@ -6,11 +6,17 @@ import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { Component } from "./components/Component.js";
-
+import { mat4 } from "../lib/glm.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
+import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
 
 import { BallType, GameState } from "./common/Enums.js";
-import { vec3 } from "../lib/glm.js";
+import { vec3, quat } from "../lib/glm.js";
+import {
+	getGlobalModelMatrix,
+	getLocalModelMatrix,
+	getGlobalViewMatrix,
+} from "../engine/core/SceneUtils.js";
 
 class Player {
 	constructor(id, type) {
@@ -40,7 +46,6 @@ export class Game {
 			players = null,
 			currentPlayer = -1,
 			pocketedBalls = [],
-			movingBalls = [],
 			keys = {},
 		} = {}
 	) {
@@ -60,23 +65,21 @@ export class Game {
 		this.player = player;
 		this.players = players;
 		this.currentPlayer = currentPlayer;
-
 		this.pocketedBalls = pocketedBalls;
-
 		this.keys = keys;
-
 		this.setComponents();
 
-		this.camera.addComponent(
-			new FirstPersonController(this.camera, this.domElement)
-		);
+		// this.camera.addComponent(
+		//      new FirstPersonController(this.camera, this.domElement)
+		// );
 
+		this.camera.addComponent(
+			new OrbitController2(this.camera, this.domElement)
+		);
 		this.table = new Table(this.balls, this.edges, this.pockets);
 
-		// const transform = this.camera.getComponentOfType(Transform);
-		// transform.matrix = this.white.node.getComponentOfType(Transform).matrix;
-		// transform.translation = this.white.center;
-		// transform.translation[1]++;
+		// DODAL CONTROLLER
+		this.controller = this.camera.getComponentOfType(OrbitController2);
 
 		this.initHandlers();
 	}
@@ -132,6 +135,9 @@ export class Game {
 
 	start() {
 		this.coinFlip();
+		const whitePos =
+			this.white.node.getComponentOfType(Transform).translation;
+		this.controller.setTarget(whitePos);
 		this.gameState = GameState.STARTED;
 	}
 
@@ -142,10 +148,8 @@ export class Game {
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.table.update(time, dt);
-			if (this.table.isStill) {
-				/**
-				 * Check for faults
-				 */
+
+			if (this.table.isStationary) {
 				this.gameState = GameState.IN_PROGRESS;
 			}
 		}
@@ -156,9 +160,8 @@ export class Game {
 
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
-				const velocity = vec3.create();
-				vec3.random(velocity);
-				this.white.hit(velocity);
+				this.hit();
+				console.log("In progress space");
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
@@ -168,6 +171,25 @@ export class Game {
 				component.update?.(time, dt);
 			}
 		});
+
+		// DODATEK KAMERA
+
+		// const transform = this.camera.getComponentOfType(Transform);
+		// const rotation = quat.create();
+		// quat.rotateY(rotation, rotation, 1.5);
+		// quat.rotateX(rotation, rotation, 0.0);
+		// transform.rotation = rotation;
+
+		// console.log(this.white.node.getComponentOfType(Transform).translation);
+
+		// console.log(
+		// 	this.balls.at(2).node.getComponentOfType(Transform).translation
+		// );
+		// const whitePos =
+		// 	this.white.node.getComponentOfType(Transform).translation;
+		// // this.controller.setTarget(whitePos);
+		// this.controller.setTarget(whitePos);
+		// console.log(this.camera.getComponentOfType(Transform).matrix);
 	}
 
 	render() {
@@ -178,11 +200,15 @@ export class Game {
 		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
 	}
 
+	hit() {
+		const velocity = vec3.fromValues(-1, 0, 0);
+		vec3.scale(velocity, velocity, 4);
+		this.white.hit(velocity);
+	}
+
 	break() {
 		if (this.keys["Space"]) {
-			const velocity = vec3.create();
-			vec3.random(velocity);
-			this.white.hit(velocity);
+			this.hit();
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
 	}
@@ -194,19 +220,6 @@ export class Game {
 	}
 
 	checkForFaults() {
-		const pocketedBalls = this.table.pocketedBalls.filter(
-			(ball) => ball.type != this.currentPlayer.type
-		);
-		if (pocketedBalls.length == 0) {
-		}
-		// const faulPockets = this.pocketedBalls.filter(
-		// 	(ball) => ball.type !== this.currentPlayer.type
-		// );
-
-		// if (faulPockets.length == 0) {
-		// 	this.switchPlayer();
-		// }
-
 		this.gameState = GameState.IN_PROGRESS;
 	}
 

@@ -102,10 +102,10 @@ const PocketMapping = {
 };
 
 const EdgeMapping = {
-	0: EdgeLocation.RIGHT_LOWER,
-	1: EdgeLocation.LEFT_LOWER,
-	2: EdgeLocation.RIGHT_UPPER,
-	3: EdgeLocation.LEFT_UPPER,
+	0: EdgeLocation.RIGHT,
+	1: EdgeLocation.LEFT,
+	2: EdgeLocation.RIGHT,
+	3: EdgeLocation.LEFT,
 	4: EdgeLocation.LOWER,
 	5: EdgeLocation.UPPER,
 };

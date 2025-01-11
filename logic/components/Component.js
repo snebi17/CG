@@ -1,25 +1,35 @@
 import {
 	calculateAxisAlignedBoundingBox,
 	mergeAxisAlignedBoundingBoxes,
+	transformMesh,
 } from "../../engine/core/MeshUtils.js";
 
-import { Model } from "../../engine/core.js";
+import {
+	getGlobalModelMatrix,
+	getGlobalViewMatrix,
+	getLocalModelMatrix,
+	getLocalViewMatrix,
+} from "../../engine/core/SceneUtils.js";
+import { mat4, vec3 } from "../../lib/glm.js";
+
+import { Model, Transform } from "../../engine/core.js";
 
 export class Component {
-	constructor(id, node, isStatic) {
+	constructor(id, node) {
 		this.id = id;
 		this.node = node;
-		this.node.isStatic = isStatic;
-		this.model = this.node.getComponentOfType(Model);
 
-		if (!this.model) {
+		const model = this.node.getComponentOfType(Model);
+
+		if (!model) {
 			return;
 		}
 
-		const boxes = this.model.primitives.map((primitive) =>
+		const boxes = model.primitives.map((primitive) =>
 			calculateAxisAlignedBoundingBox(primitive.mesh)
 		);
 
 		this.node.aabb = mergeAxisAlignedBoundingBoxes(boxes);
+		this.position = this.node.getComponentOfType(Transform).translation;
 	}
 }

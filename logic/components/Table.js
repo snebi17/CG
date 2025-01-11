@@ -2,27 +2,54 @@ import { Transform } from "../../engine/core.js";
 import { getGlobalModelMatrix } from "../../engine/core/SceneUtils.js";
 import { vec3 } from "../../lib/glm.js";
 import { Ball } from "./Ball.js";
+import { Edge } from "./Edge.js";
 
 export class Table {
 	constructor(
 		balls,
 		edges,
 		pockets,
-		{ movingBalls = [], pocketedBalls = [], frictionCoefficient = 0.2 } = {}
+		{
+			movingBalls = [],
+			pocketedBalls = [],
+			frictionCoefficient = 0.2,
+			isStationary = true,
+		} = {}
 	) {
 		this.balls = balls;
 		this.edges = edges;
 		this.pockets = pockets;
 		this.frictionCoefficient = frictionCoefficient;
+		this.isStationary = isStationary;
+
+		this.bounds = [
+			[0.38, 0, 0.45],
+			[0.38, 0, -0.45],
+			[-1.5, 0, 0.45],
+			[-1.5, 0, -0.45],
+		];
+
+		this.partitions = [[], [], [], []];
+
+		this.transform;
 
 		this.movingBalls = movingBalls;
 		this.pocketedBalls = pocketedBalls;
 	}
 
 	update(t, dt) {
-		this.balls.forEach((ball) => {
+		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
+
+		if (this.movingBalls.length == 0) {
+			this.isStationary = true;
+			return;
+		}
+
+		this.isStationary = false;
+
+		this.movingBalls.forEach((ball) => {
 			this.balls.forEach((other) => {
-				if (other != ball) {
+				if (ball != other) {
 					this.handleBounce(dt, ball, other);
 				}
 			});
@@ -38,56 +65,87 @@ export class Table {
 
 	handlePocketing(ball, pocket) {
 		if (this.resolveCollision(ball.node, pocket.node)) {
-			console.log(pocket);
-			this.pocketedBalls.push(ball);
+			// ball.isPocketed = true;
+			// this.pocketedBalls.push(ball);
 		}
 	}
 
 	handleBounce(dt, ball, other) {
 		if (this.resolveCollision(ball.node, other.node)) {
-			const velocity = vec3.create();
-			vec3.copy(velocity, ball.velocity);
-			const speed = vec3.length(velocity);
+			const speed = vec3.length(ball.velocity);
 
-			if (speed < 0.01) {
-				vec3.set(velocity, 0, 0, 0);
+			if (speed < 0.015) {
+				vec3.zero(ball.velocity);
+				ball.isMoving = false;
 				return;
 			}
 
 			if (other instanceof Ball) {
-				/**
-				 * Ball to ball collision
-				 * Calculate kinetic energy and momentum the ball gives to another ball when collision occurs
-				 */
-				const negatedVelocity = vec3.create();
-				vec3.negate(negatedVelocity, velocity);
-				vec3.scale(negatedVelocity, negatedVelocity, 0.8);
-				ball.hit(negatedVelocity);
-				const conservedVelocity = vec3.create();
-				vec3.scale(conservedVelocity, velocity, 0.9);
-				other.hit(conservedVelocity);
-			} else {
-				/**
-				 * Ball to edge collision
-				 * Calculate velocity and direction in which the ball should move after collision with an edge
-				 */
-				const normal = other.normal;
-				const dotProduct = vec3.dot(velocity, normal);
-				vec3.scaleAndAdd(velocity, velocity, normal, -2 * dotProduct);
-				vec3.scale(velocity, velocity, 1 - this.frictionCoefficient);
-				vec3.scale(velocity, velocity, 1 - ball.deceleration * dt);
-				const clampedSpeed = Math.min(speed, vec3.length(velocity));
+				const normal = vec3.create();
+				vec3.subtract(normal, other.position, ball.position);
+				vec3.normalize(normal, normal);
+
+				if (other.isMoving) {
+					const dot1 = vec3.dot(ball.velocity, normal);
+					const dot2 = vec3.dot(other.velocity, normal);
+
+					const velocity1 = vec3.create();
+					const velocity2 = vec3.create();
+
+					vec3.scale(velocity1, normal, dot1);
+					vec3.subtract(ball.velocity, ball.velocity, velocity1);
+
+					vec3.scale(velocity2, normal, dot2);
+					vec3.subtract(other.velocity, other.velocity, velocity2);
+
+					vec3.add(ball.velocity, ball.velocity, velocity2);
+					vec3.add(other.velocity, other.velocity, velocity1);
+				} else {
+					const dot = vec3.dot(ball.velocity, normal);
+					const velocity = vec3.create();
+					vec3.scale(velocity, normal, dot);
+					vec3.subtract(ball.velocity, ball.velocity, velocity);
+
+					vec3.scale(normal, normal, speed);
+					other.hit(normal);
+				}
+			} else if (other instanceof Edge) {
+				const normal = vec3.create();
+				vec3.copy(normal, other.normal);
+				vec3.normalize(normal, normal);
+
+				const dotProduct = vec3.dot(ball.velocity, normal);
+				vec3.scaleAndAdd(
+					ball.velocity,
+					ball.velocity,
+					normal,
+					-2 * dotProduct
+				);
+        
 				vec3.scale(
-					velocity,
-					velocity,
-					clampedSpeed / vec3.length(velocity)
+					ball.velocity,
+					ball.velocity,
+					1 - this.frictionCoefficient
+				);
+				vec3.scale(
+					ball.velocity,
+					ball.velocity,
+					1 - ball.deceleration * dt
 				);
 
-				ball.hit(velocity);
+				const clampedSpeed = Math.min(
+					speed,
+					vec3.length(ball.velocity)
+				);
+				vec3.scale(
+					ball.velocity,
+					ball.velocity,
+					clampedSpeed / vec3.length(ball.velocity)
+				);
 			}
 		}
 	}
-
+  
 	intervalIntersection(min1, max1, min2, max2) {
 		return !(min1 > max2 || min2 > max1);
 	}
