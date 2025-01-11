@@ -9,12 +9,27 @@ export class Table {
 		balls,
 		edges,
 		pockets,
-		{ movingBalls = [], pocketedBalls = [], frictionCoefficient = 0.2 } = {}
+		{
+			movingBalls = [],
+			pocketedBalls = [],
+			frictionCoefficient = 0.2,
+			isStationary = true,
+		} = {}
 	) {
 		this.balls = balls;
 		this.edges = edges;
 		this.pockets = pockets;
 		this.frictionCoefficient = frictionCoefficient;
+		this.isStationary = isStationary;
+
+		this.bounds = [
+			[0.38, 0, 0.45],
+			[0.38, 0, -0.45],
+			[-1.5, 0, 0.45],
+			[-1.5, 0, -0.45],
+		];
+
+		this.partitions = [[], [], [], []];
 
 		this.transform;
 
@@ -23,7 +38,16 @@ export class Table {
 	}
 
 	update(t, dt) {
-		this.balls.forEach((ball) => {
+		this.movingBalls = this.balls.filter((ball) => ball.isMoving);
+
+		if (this.movingBalls.length == 0) {
+			this.isStationary = true;
+			return;
+		}
+
+		this.isStationary = false;
+
+		this.movingBalls.forEach((ball) => {
 			this.balls.forEach((other) => {
 				if (ball != other) {
 					this.handleBounce(dt, ball, other);
@@ -41,8 +65,8 @@ export class Table {
 
 	handlePocketing(ball, pocket) {
 		if (this.resolveCollision(ball.node, pocket.node)) {
-			ball.isPocketed = true;
-			this.pocketedBalls.push(ball);
+			// ball.isPocketed = true;
+			// this.pocketedBalls.push(ball);
 		}
 	}
 
@@ -50,8 +74,9 @@ export class Table {
 		if (this.resolveCollision(ball.node, other.node)) {
 			const speed = vec3.length(ball.velocity);
 
-			if (speed < 0.01) {
+			if (speed < 0.015) {
 				vec3.zero(ball.velocity);
+				ball.isMoving = false;
 				return;
 			}
 
@@ -81,6 +106,7 @@ export class Table {
 					vec3.scale(velocity, normal, dot);
 					vec3.subtract(ball.velocity, ball.velocity, velocity);
 
+					vec3.scale(normal, normal, speed);
 					other.hit(normal);
 				}
 			} else if (other instanceof Edge) {
@@ -95,27 +121,30 @@ export class Table {
 					normal,
 					-2 * dotProduct
 				);
+
 				vec3.scale(
 					ball.velocity,
 					ball.velocity,
 					1 - this.frictionCoefficient
 				);
+
+				vec3.scale(
+					ball.velocity,
+					ball.velocity,
+					1 - ball.deceleration * dt
+				);
+
+				const clampedSpeed = Math.min(
+					speed,
+					vec3.length(ball.velocity)
+				);
+				vec3.scale(
+					ball.velocity,
+					ball.velocity,
+					clampedSpeed / vec3.length(ball.velocity)
+				);
 			}
 		}
-	}
-
-	calculateCollisionAngle(velocity, position1, position2) {
-		const collisionVector = vec3.create();
-		vec3.subtract(collisionVector, position2, position1);
-
-		const collisionNormal = vec3.create();
-		vec3.normalize(collisionNormal, collisionVector);
-		console.log(collisionNormal);
-
-		const speed = vec3.length(velocity);
-		const cosTheta = vec3.dot(velocity, collisionNormal) / speed;
-
-		return Math.acos(cosTheta) / 2;
 	}
 
 	intervalIntersection(min1, max1, min2, max2) {

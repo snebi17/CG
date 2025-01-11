@@ -6,10 +6,6 @@ import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { Component } from "./components/Component.js";
-import {
-	getGlobalModelMatrix,
-	getLocalModelMatrix,
-} from "../engine/core/SceneUtils.js";
 import { mat4 } from "../lib/glm.js";
 import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
@@ -139,6 +135,9 @@ export class Game {
 
 	start() {
 		this.coinFlip();
+		const whitePos =
+			this.white.node.getComponentOfType(Transform).translation;
+		this.controller.setTarget(whitePos);
 		this.gameState = GameState.STARTED;
 	}
 
@@ -149,6 +148,10 @@ export class Game {
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.table.update(time, dt);
+
+			if (this.table.isStationary) {
+				this.gameState = GameState.IN_PROGRESS;
+			}
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
@@ -157,8 +160,8 @@ export class Game {
 
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
-				const velocity = vec3.random(vec3.create(), 2);
-				this.white.hit(velocity);
+				this.hit();
+				console.log("In progress space");
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
@@ -179,13 +182,13 @@ export class Game {
 
 		// console.log(this.white.node.getComponentOfType(Transform).translation);
 
-		console.log(
-			this.balls.at(2).node.getComponentOfType(Transform).translation
-		);
-		const whitePos =
-			this.white.node.getComponentOfType(Transform).translation;
+		// console.log(
+		// 	this.balls.at(2).node.getComponentOfType(Transform).translation
+		// );
+		// const whitePos =
+		// 	this.white.node.getComponentOfType(Transform).translation;
+		// // this.controller.setTarget(whitePos);
 		// this.controller.setTarget(whitePos);
-		this.controller.setTarget(whitePos);
 		// console.log(this.camera.getComponentOfType(Transform).matrix);
 	}
 
@@ -197,12 +200,15 @@ export class Game {
 		this.currentPlayer = Math.random() > 0.5 ? 0 : 1;
 	}
 
+	hit() {
+		const velocity = vec3.fromValues(-1, 0, 0);
+		vec3.scale(velocity, velocity, 4);
+		this.white.hit(velocity);
+	}
+
 	break() {
 		if (this.keys["Space"]) {
-			const velocity = vec3.fromValues(-1, 0, 0);
-			const speed = 5;
-			vec3.scale(velocity, velocity, speed);
-			this.white.hit(velocity);
+			this.hit();
 			this.gameState = GameState.RESOLVING_COLLISION;
 		}
 	}

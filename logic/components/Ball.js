@@ -56,17 +56,20 @@ export class Ball extends Component {
 			return;
 		}
 
-		const velocity = vec3.copy(vec3.create(), this.velocity);
 		vec3.scale(this.velocity, this.velocity, 1 - this.deceleration * dt);
 
-		const deltaVelocity = vec3.sub(vec3.create(), velocity, this.velocity);
+		// const deltaVelocity = vec3.sub(
+		// 	vec3.create(),
+		// 	this.velocity,
+		// 	this.velocity
+		// );
 
 		const movement = vec3.create();
 		const transform = this.node.getComponentOfType(Transform);
 
 		vec3.scale(movement, this.velocity, this.deceleration * dt);
 		vec3.add(transform.translation, transform.translation, movement);
-		vec3.add(this.position, this.position, deltaVelocity);
+		// vec3.add(this.position, this.position, deltaVelocity);
 	}
 
 	update(t, dt) {
