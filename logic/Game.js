@@ -5,18 +5,10 @@ import { Table } from "./components/Table.js";
 import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
-import { Component } from "./components/Component.js";
-import { mat4 } from "../lib/glm.js";
-import { FirstPersonController } from "../engine/controllers/FirstPersonController.js";
 import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
 
-import { BallType, GameState } from "./common/Enums.js";
-import { vec3, quat } from "../lib/glm.js";
-import {
-	getGlobalModelMatrix,
-	getLocalModelMatrix,
-	getGlobalViewMatrix,
-} from "../engine/core/SceneUtils.js";
+import { GameState } from "./common/Enums.js";
+import { vec3 } from "../lib/glm.js";
 
 class Player {
 	constructor(id, type) {
@@ -161,7 +153,6 @@ export class Game {
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
 				this.hit();
-				console.log("In progress space");
 				this.gameState = GameState.RESOLVING_COLLISION;
 			}
 		}
