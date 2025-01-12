@@ -7,10 +7,10 @@ export class OrbitController2 {
 		domElement,
 		{
 			rotation = [0, 0, 0, 1],
-			distance = [0, .2, 1.2],
-			moveSensitivity = 0.0015,
+			distance = [0, 0.2, 1.2],
+			moveSensitivity = 0.008,
 			zoomSensitivity = 0.002,
-			keys = {}
+			keys = {},
 		} = {}
 	) {
 		this.node = node;
@@ -22,14 +22,12 @@ export class OrbitController2 {
 		this.moveSensitivity = moveSensitivity;
 		this.zoomSensitivity = zoomSensitivity;
 
-		this.keys = keys,
-
-		this.initHandlers();
+		(this.keys = keys), this.initHandlers();
 
 		// **CHANGE**: Added target property to define the object to orbit around
 		// this.target = [1.5, -0.25, 0.41999998688697815]; // Object or position [x, y, z]
-        // this.target = [0.41999998688697815, 1.5, -0.25];
-        this.target = null;
+		// this.target = [0.41999998688697815, 1.5, -0.25];
+		this.target = null;
 	}
 
 	initHandlers() {
@@ -80,14 +78,14 @@ export class OrbitController2 {
 		} else {
 			throw new Error("OrbitController: Invalid target type.");
 		}
-		
+
 		let dx = 0;
 
 		if (this.keys["KeyD"]) {
-			dx += dt * this.moveSensitivity;
+			dx += this.moveSensitivity;
 		}
 		if (this.keys["KeyA"]) {
-			dx -= dt * this.moveSensitivity;
+			dx -= this.moveSensitivity;
 		}
 
 		quat.rotateY(this.rotation, this.rotation, -dx);

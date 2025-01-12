@@ -21,7 +21,10 @@ export class Ball extends Component {
 			deceleration = 0.4,
 			isMoving = false,
 			isPocketed = false,
-			initialPosition = vec3.copy(vec3.create(), node.getComponentOfType(Transform).translation),
+			initialPosition = vec3.copy(
+				vec3.create(),
+				node.getComponentOfType(Transform).translation
+			),
 		} = {}
 	) {
 		super(id, node);
@@ -61,16 +64,13 @@ export class Ball extends Component {
 		const movement = vec3.create();
 		const transform = this.node.getComponentOfType(Transform);
 
-		transform[1] = 0;
-
 		vec3.scale(movement, this.velocity, this.deceleration * dt);
 		vec3.add(transform.translation, transform.translation, movement);
 	}
 
 	update(t, dt) {
 		if (this.isPocketed) {
-			// if it's pocketed, apply animation for translateY * dt
-			// after a second, delete the ball
+			setTimeout(() => (this.isPocketed = false), 3000);
 			this.pocketAnimation(dt);
 		}
 
@@ -87,6 +87,7 @@ export class Ball extends Component {
 	}
 
 	set() {
-		this.node.getComponentOfType(Transform).translation = this.initialPosition;
+		const transform = this.node.getComponentOfType(Transform);
+		vec3.copy(transform.translation, this.initialPosition);
 	}
 }
