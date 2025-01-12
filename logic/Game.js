@@ -64,7 +64,7 @@ export class Game {
 		/* this.camera.addComponent(
 			new OrbitController2(this.camera, this.domElement)
 		);
-		
+		this.table = new Table(this.balls, this.edges, this.pockets);
 
 		// DODAL CONTROLLER
 		this.controller = this.camera.getComponentOfType(OrbitController2); */
@@ -72,7 +72,7 @@ export class Game {
 		this.camera.addComponent(
 			new TurntableController(this.camera, this.domElement)
 		);
-		
+
 		this.controller = this.camera.getComponentOfType(TurntableController);
 
 		this.initHandlers();
@@ -95,10 +95,6 @@ export class Game {
 		this.balls = this.scene.children
 			.slice(20, 36)
 			.map((node, i) => new Ball(i, node));
-
-		for (const ball of this.balls) {
-			console.log;
-		}
 
 		this.white = this.balls.at(0);
 
@@ -130,7 +126,7 @@ export class Game {
 		const whitePos = translation;
 		this.controller.pivot = whitePos;
 		this.controller.yaw += Math.PI / 2;
-		this.controller.pitch -= Math.PI / 18;
+		this.controller.pitch -= Math.PI / 10;
 	}
 
 	update(time, dt) {
@@ -148,7 +144,7 @@ export class Game {
 			if (this.table.isStationary) {
 				this.checkForFaults();
 				console.log(this.players);
-				
+
 				this.controller.toggleBirdsEye();
 			}
 		}
