@@ -19,14 +19,58 @@
     <script type="module" src="main.js"></script>
     <link rel="stylesheet" href="./engine/style.css">
     <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="fullscreen no-touch pixelated" id="game-area">
+        <div class="player-info" id="player-info">
+            <div id="player-one">
+            </div>
+            <div id="player-two">
+            </div>
+        </div>
         <canvas></canvas>
     </div>
-    <div class="player-info">
-
+    <div class="interface-wrapper" id="user-interface">
+        <div class="interface">
+            <h2>7-BALL POOL</h2>
+            <div class="inputs" id="input-area">
+                <div class="player-input">
+                    <label for="player-one-name">Igralec #1</label>
+                    <input type="text" id="player-one-name">
+                </div>
+                <div class="player-input">
+                    <label for="player-two-name">Igralec #2</label>
+                    <input type="text" id="player-two-name">
+                </div>
+            </div>
+            <div class="buttons" id="buttons-area">
+                <button class="btn" id="start-button">Igraj</button>
+                <button class="btn" id="instructions-button">Navodila</button>
+            </div>
+        </div>
+    </div>
+    <div class="instructions" id="instructions">
+        <h3>Navodila</h3>
+        <h4>Kontrole</h4>
+        <p><span class="red">[SPACE] :</span> udarec bele žoge</p>
+        <p><span class="red">[A] in [D]:</span> sprememba kota udarca levo ali desno.</p>
+        <p><span class="red">Miška:</span> sprememba kota udarca levo/desno ali pogleda v vse smeri</p>
+        <p><span class="red">Kolešček:</span> spreminjanje povečave (zoom)</p>
+        <h4>Pravila</h4>
+        <p class="rules">-Igra Biljard ima poenostavljena pravila pravega biljarda. <br>
+            -Zmagovalec je tisti, ki prvi spravi v luknje vse svoje žoge in črno žogo.
+            -Igralec, ki pospravi prvo žogo določi kdo ima polne in kdo prazne
+            (tista, ki jo je pospravil je njegovega tipa – polna ali prazna). <br>
+            -Če je črna pospravljena prej avtomatsko zmaga nasprotnik. <br>
+            -V kolikor zadaneš svojo žogo v luknjo lahko udariš ponovno. <br>
+            -Če pospraviš belo žogo je avtomatsko na vrsti nasprotnik in bela žoga gre v začetno pozicijo.</p>
+        <div class="buttons">
+            <button class="btn close" id="close-instructions">Zapri</button>
+        </div>
     </div>
 </body>
 

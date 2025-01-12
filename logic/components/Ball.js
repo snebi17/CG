@@ -1,15 +1,8 @@
 import { Transform } from "../../engine/core.js";
-import { mat4, vec3 } from "../../lib/glm.js";
+import { vec3 } from "../../lib/glm.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
-
-import {
-	getGlobalModelMatrix,
-	getGlobalViewMatrix,
-	getLocalModelMatrix,
-	getLocalViewMatrix,
-} from "../../engine/core/SceneUtils.js";
 
 export class Ball extends Component {
 	constructor(
@@ -21,10 +14,6 @@ export class Ball extends Component {
 			deceleration = 0.4,
 			isMoving = false,
 			isPocketed = false,
-			initialPosition = vec3.copy(
-				vec3.create(),
-				node.getComponentOfType(Transform).translation
-			),
 		} = {}
 	) {
 		super(id, node);
@@ -37,7 +26,7 @@ export class Ball extends Component {
 		this.deceleration = deceleration;
 		this.isMoving = isMoving;
 		this.isPocketed = isPocketed;
-		this.initialPosition = initialPosition;
+		this.initialPosition = vec3.copy(vec3.create(), this.node.getComponentOfType(Transform).translation);
 	}
 
 	hit(velocity) {

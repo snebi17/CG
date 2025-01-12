@@ -58,9 +58,9 @@ export class Table {
 
 	handlePocketing(ball, pocket) {
 		if (pocket.checkCollision(ball)) {
-			setTimeout(() => (ball.isPocketed = true), 1000);
 			if (!this.pocketedBalls.includes(ball)) {
 				this.pocketedBalls.push(ball);
+				ball.isPocketed = true;
 			}
 		}
 	}

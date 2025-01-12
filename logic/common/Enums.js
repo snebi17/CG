@@ -27,6 +27,7 @@ const GameType = {
 const GameState = {
 	NONE: "none",
 
+	LOADING: "loading",
 	STARTED: "started",
 	RESOLVING_COLLISION: "resolving collision",
 	BALL_IN_HAND: "ball in hand",

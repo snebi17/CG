@@ -1,4 +1,4 @@
-import { mat4 } from 'glm';
+import { mat4, vec3 } from 'glm';
 
 export class Camera {
 
@@ -42,5 +42,4 @@ export class Camera {
         const { fovy, aspect, near, far } = this;
         return mat4.perspectiveZO(mat4.create(), fovy, aspect, near, far);
     }
-
 }
