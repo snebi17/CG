@@ -14,16 +14,16 @@ export class Table {
 			pocketedBalls = [],
 			frictionCoefficient = 0.2,
 			isStationary = true,
-			firstHit = null
+			firstHit = null,
 		} = {}
 	) {
 		this.balls = balls;
 		this.edges = edges;
 		this.pockets = pockets;
 		this.frictionCoefficient = frictionCoefficient;
-		
+
 		this.transform;
-		
+
 		this.movingBalls = movingBalls;
 		this.pocketedBalls = pocketedBalls;
 		this.firstHit = firstHit;
@@ -59,8 +59,8 @@ export class Table {
 	handlePocketing(ball, pocket) {
 		if (pocket.checkCollision(ball)) {
 			ball.isPocketed = true;
-			console.log(ball);
 			if (!this.pocketedBalls.includes(ball)) {
+				console.log(ball);
 				this.pocketedBalls.push(ball);
 			}
 		}
