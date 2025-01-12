@@ -84,7 +84,6 @@ export class Game {
 
 	initComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
-		this.scene.removeChild(this.cue.node);
 
 		this.camera.addComponent(this.cue);
 		this.balls = this.scene.children
