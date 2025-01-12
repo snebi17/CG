@@ -1,4 +1,4 @@
-import { Transform } from "../engine/core.js";
+import { Camera, Transform } from "../engine/core.js";
 
 import { Ball } from "./components/Ball.js";
 import { Table } from "./components/Table.js";
@@ -9,7 +9,7 @@ import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
 import { TurntableController } from "../engine/controllers/TurntableController.js";
 
 import { GameState, BallType } from "./common/Enums.js";
-import { vec3 } from "../lib/glm.js";
+import { mat4, vec3 } from "../lib/glm.js";
 
 class Player {
 	constructor(id, type) {
@@ -95,10 +95,6 @@ export class Game {
 		this.balls = this.scene.children
 			.slice(20, 36)
 			.map((node, i) => new Ball(i, node));
-
-		for (const ball of this.balls) {
-			console.log;
-		}
 
 		this.white = this.balls.at(0);
 
@@ -187,8 +183,8 @@ export class Game {
 	}
 
 	hit() {
-		const velocity = vec3.fromValues(-1, 0, 0);
-		vec3.scale(velocity, velocity, 4);
+		const velocity = this.controller.getViewVector();
+		vec3.scale(velocity, velocity, 2);
 		this.white.hit(velocity);
 	}
 
@@ -209,7 +205,7 @@ export class Game {
 	 * 		+ If the first ball hit isn't the player's type -> points for the player of the type that (if it) goes in and switch players
 	 * 		+ If the white goes in -> place the ball anywhere on the line
 	 * #4 - Endgame:
-	 * 		+ When only black is left and final hole is true -> if black goes inside the correct player wins, else continue
+	 * 		+ When only black is left -> if black goes inside the correct player wins, else continue
 	 */
 	checkForFaults() {
 		const status = this.table.getStatus();

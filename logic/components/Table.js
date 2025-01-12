@@ -60,7 +60,6 @@ export class Table {
 		if (pocket.checkCollision(ball)) {
 			ball.isPocketed = true;
 			if (!this.pocketedBalls.includes(ball)) {
-				console.log(ball);
 				this.pocketedBalls.push(ball);
 			}
 		}

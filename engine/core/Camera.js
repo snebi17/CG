@@ -1,4 +1,4 @@
-import { mat4 } from 'glm';
+import { mat4, vec3 } from 'glm';
 
 export class Camera {
 
@@ -43,4 +43,9 @@ export class Camera {
         return mat4.perspectiveZO(mat4.create(), fovy, aspect, near, far);
     }
 
+    // get lookAtVector() {
+    //     const forward = vec3.fromValues(0, 0, -1);
+    //     const rotatedForward = vec3.transformMat4(vec3.create(), forward, this.orientation);
+    //     return rotatedForward;
+    // }
 }

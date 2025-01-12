@@ -1,15 +1,8 @@
 import { Transform } from "../../engine/core.js";
-import { mat4, vec3 } from "../../lib/glm.js";
+import { vec3 } from "../../lib/glm.js";
 
 import { Component } from "./Component.js";
 import { BallMapping } from "../common/Mappings.js";
-
-import {
-	getGlobalModelMatrix,
-	getGlobalViewMatrix,
-	getLocalModelMatrix,
-	getLocalViewMatrix,
-} from "../../engine/core/SceneUtils.js";
 
 export class Ball extends Component {
 	constructor(
