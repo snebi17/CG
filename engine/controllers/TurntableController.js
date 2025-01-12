@@ -97,12 +97,12 @@ export class TurntableController {
         }
 
         // Pressing 'A' rotates left
-        if (e.key === 'a' || e.key === 'A') {
-            this.yaw += this.rotateKeySensitivity;
+        if (e.code == "KeyA") {
+            this.yaw -= this.rotateKeySensitivity;
         }
         // Pressing 'D' rotates right
-        else if (e.key === 'd' || e.key === 'D') {
-            this.yaw -= this.rotateKeySensitivity;
+        else if (e.code == "KeyD") {
+            this.yaw += this.rotateKeySensitivity;
         }
     }
 
@@ -133,7 +133,7 @@ export class TurntableController {
         const dy = e.movementY;
 
         // Update pitch & yaw
-        this.pitch -= dy * this.moveSensitivity;
+        // this.pitch -= dy * this.moveSensitivity;
         this.yaw   -= dx * this.moveSensitivity;
 
         // Clamp pitch between -90 & +90 degrees
