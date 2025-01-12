@@ -15,9 +15,9 @@ export class TurntableController {
         this.node = node;
         this.domElement = domElement;
 
-        this.pitch = pitch;  // rotation around X
-        this.yaw   = yaw;    // rotation around Y
-        this.distance = distance; // how far the camera is from pivot
+        this.pitch = pitch;  
+        this.yaw   = yaw;    
+        this.distance = distance;
 
         this.moveSensitivity = moveSensitivity;
         this.zoomSensitivity = zoomSensitivity;
