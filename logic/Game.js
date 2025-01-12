@@ -6,6 +6,7 @@ import { Edge } from "./components/Edge.js";
 import { Cue } from "./Cue.js";
 import { Pocket } from "./components/Pocket.js";
 import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
+import { TurntableController } from "../engine/controllers/TurntableController.js";
 
 import { GameState, BallType } from "./common/Enums.js";
 import { vec3 } from "../lib/glm.js";
@@ -58,13 +59,21 @@ export class Game {
 		this.keys = keys;
 		this.initComponents();
 
-		this.camera.addComponent(
-			new OrbitController2(this.camera, this.domElement)
-		);
 		this.table = new Table(this.balls, this.edges, this.pockets);
 
+		/* this.camera.addComponent(
+			new OrbitController2(this.camera, this.domElement)
+		);
+		
+
 		// DODAL CONTROLLER
-		this.controller = this.camera.getComponentOfType(OrbitController2);
+		this.controller = this.camera.getComponentOfType(OrbitController2); */
+
+		this.camera.addComponent(
+			new TurntableController(this.camera, this.domElement)
+		);
+		
+		this.controller = this.camera.getComponentOfType(TurntableController);
 
 		this.initHandlers();
 	}
@@ -119,7 +128,9 @@ export class Game {
 		const translation =
 			this.white.node.getComponentOfType(Transform).translation;
 		const whitePos = translation;
-		this.controller.setTarget(whitePos);
+		this.controller.pivot = whitePos;
+		this.controller.yaw += Math.PI / 2;
+		this.controller.pitch -= Math.PI / 18;
 	}
 
 	update(time, dt) {
@@ -127,6 +138,7 @@ export class Game {
 			if (this.keys["Space"]) {
 				this.hit();
 				this.gameState = GameState.RESOLVING_COLLISION;
+				this.controller.toggleBirdsEye();
 			}
 		}
 
@@ -136,6 +148,8 @@ export class Game {
 			if (this.table.isStationary) {
 				this.checkForFaults();
 				console.log(this.players);
+				
+				this.controller.toggleBirdsEye();
 			}
 		}
 
@@ -149,6 +163,7 @@ export class Game {
 			if (this.keys["Space"]) {
 				this.hit();
 				this.gameState = GameState.RESOLVING_COLLISION;
+				this.controller.toggleBirdsEye();
 			}
 		}
 
