@@ -13,6 +13,8 @@ const playerTwo = document.getElementById("player-two-name");
 let playerOneName;
 let playerTwoName;
 const instructionsButton = document.getElementById("instructions-button");
+const closeInstructions = document.getElementById("close-instructions");
+const instructions = document.getElementById("instructions");
 
 let gameArea = document.getElementById("game-area");
 let userInterface = document.getElementById("user-interface");
@@ -27,6 +29,14 @@ startButton.addEventListener("click", () => {
 	playerTwoName = playerTwo.value.length > 0 ? playerTwo.value : "Igralec #2";
 
 	initialize();
+});
+
+instructionsButton.addEventListener("click", () => {
+	instructions.style.display = 'block';
+});
+
+closeInstructions.addEventListener("click", () => {
+	instructions.style.display = 'none';
 });
 
 async function initialize() {
