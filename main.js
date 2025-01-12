@@ -12,7 +12,7 @@ await renderer.initialize();
 
 const loader = new GLTFLoader();
 await loader.load(
-	new URL("../models/table_update/table.gltf", import.meta.url)
+	new URL("../models/table/table2.gltf", import.meta.url)
 );
 
 const scene = loader.loadScene(loader.defaultScene);
