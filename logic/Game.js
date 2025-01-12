@@ -33,10 +33,11 @@ export class Game {
 		camera,
 		renderer,
 		domElement,
+		playerNames,
 		{
 			gameState = GameState.STARTED,
 			gameType = null,
-			players = [new Player(0, null, ""), new Player(1, null, "")],
+			players = [new Player(0, null, playerNames.playerOne), new Player(1, null, playerNames.playerTwo)],
 			currentPlayer = -1,
 			winner = null,
 			keys = {},
@@ -83,6 +84,7 @@ export class Game {
 
 	initComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
+		this.scene.removeChild(this.cue.node);
 
 		this.camera.addComponent(this.cue);
 		this.balls = this.scene.children
@@ -123,13 +125,6 @@ export class Game {
 	}
 
 	update(time, dt) {
-		if (this.gameState == GameState.LOADING) {
-			this.UI.showMain();
-			return;
-		}
-
-		this.UI.showInGame();
-
 		if (this.gameState == GameState.STARTED) {
 			if (this.keys["Space"]) {
 				this.hit();
@@ -317,7 +312,7 @@ export class Game {
 			const n = balls.filter((ball) => ball.type == player.type).length;
 			player.points += n;
 		}
-		this.UI.update();
+		this.UI.display();
 		this.clearPocketed(balls);
 	}
 

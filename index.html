@@ -19,37 +19,39 @@
     <script type="module" src="main.js"></script>
     <link rel="stylesheet" href="./engine/style.css">
     <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="fullscreen no-touch pixelated" id="game-area">
-        <div class="player-info">
-            <div class="player-one">
-                <p id="player-name"></p>
-                <div class="balls-info" id="player-one-active-balls">
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                </div>
+        <div class="player-info" id="player-info">
+            <div id="player-one">
             </div>
-            <div class="player-two">
-                <p id="player-name"></p>
-                <div class="balls-info" id="player-two-active-balls">
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                    <div class="ball"></div>
-                </div>
+            <div id="player-two">
             </div>
         </div>
         <canvas></canvas>
+    </div>
+    <div class="interface-wrapper" id="user-interface">
+        <div class="interface">
+            <h2>7-BALL POOL</h2>
+            <div class="inputs" id="input-area">
+                <div class="player-input">
+                    <label for="player-one-name">Igralec #1</label>
+                    <input type="text" id="player-one-name">
+                </div>
+                <div class="player-input">
+                    <label for="player-two-name">Igralec #2</label>
+                    <input type="text" id="player-two-name">
+                </div>
+            </div>
+            <div class="buttons" id="buttons-area">
+                <button class="btn" id="start-button">Igraj</button>
+                <button class="btn" id="instructions-button">Navodila</button>
+            </div>
+        </div>
     </div>
 </body>
 

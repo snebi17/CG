@@ -1,5 +1,3 @@
-import { vec3 } from "../../lib/glm.js";
-
 import { EdgeMapping, EdgeNormalMapping } from "../common/Mappings.js";
 import { Component } from "./Component.js";
 

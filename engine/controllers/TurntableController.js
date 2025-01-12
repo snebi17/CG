@@ -1,6 +1,5 @@
 import { quat, vec3 } from 'glm';
 import { Transform } from '../core/Transform.js';
-import { Camera } from '../core.js';
 
 export class TurntableController {
 
@@ -110,11 +109,6 @@ export class TurntableController {
 
     wheelHandler(e) {
         this.distance *= Math.exp(this.zoomSensitivity * e.deltaY);
-        if (this.distance > 3 && !this.isBirdsEye) {
-            this.distance = 3;
-        } else if (this.distance > 11) {
-            this.distance = 15;
-        }
     }
 
     update(dt) {
