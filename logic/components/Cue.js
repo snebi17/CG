@@ -1,5 +1,5 @@
-import { Model } from "../engine/core.js";
-import { Transform } from "../engine/core/Transform.js";
+import { Model } from "../../engine/core.js";
+import { Transform } from "../../engine/core/Transform.js";
 
 export class Cue {
 	constructor(camera, node, { angle = 0, force = 0 }) {

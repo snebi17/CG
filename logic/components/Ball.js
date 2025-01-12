@@ -14,10 +14,6 @@ export class Ball extends Component {
 			deceleration = 0.4,
 			isMoving = false,
 			isPocketed = false,
-			initialPosition = vec3.copy(
-				vec3.create(),
-				node.getComponentOfType(Transform).translation
-			),
 		} = {}
 	) {
 		super(id, node);
@@ -30,7 +26,7 @@ export class Ball extends Component {
 		this.deceleration = deceleration;
 		this.isMoving = isMoving;
 		this.isPocketed = isPocketed;
-		this.initialPosition = initialPosition;
+		this.initialPosition = vec3.copy(vec3.create(), this.node.getComponentOfType(Transform).translation);
 	}
 
 	hit(velocity) {

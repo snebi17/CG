@@ -14,3 +14,24 @@ body {
     width: 50%;    
 }
 
+.player-info {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+
+    height: 20%;
+    width: fit-content;
+}
+
+#player-name {
+    width: fit-content;
+}
+
+#active-balls {
+
+}
+
+.balls-info {
+    display: flex;
+    align-items: center;
+}

@@ -3,17 +3,18 @@ import { Camera, Transform } from "../engine/core.js";
 import { Ball } from "./components/Ball.js";
 import { Table } from "./components/Table.js";
 import { Edge } from "./components/Edge.js";
-import { Cue } from "./Cue.js";
+import { Cue } from "./components/Cue.js";
 import { Pocket } from "./components/Pocket.js";
-import { OrbitController2 } from "../engine/controllers/OrbitController2.js";
 import { TurntableController } from "../engine/controllers/TurntableController.js";
+import { UI } from "./UI.js";
 
 import { GameState, BallType } from "./common/Enums.js";
-import { mat4, vec3 } from "../lib/glm.js";
+import { vec3 } from "../lib/glm.js";
 
 class Player {
-	constructor(id, type) {
+	constructor(id, type, name) {
 		this.id = id;
+		this.name = name;
 		this.type = type;
 		this.points = 0;
 	}
@@ -35,7 +36,7 @@ export class Game {
 		{
 			gameState = GameState.STARTED,
 			gameType = null,
-			players = [new Player(0, null), new Player(1, null)],
+			players = [new Player(0, null, ""), new Player(1, null, "")],
 			currentPlayer = -1,
 			winner = null,
 			keys = {},
@@ -45,6 +46,10 @@ export class Game {
 		this.camera = camera;
 		this.renderer = renderer;
 		this.domElement = domElement;
+
+		const turntableController = new TurntableController(this.camera, this.domElement);
+		this.camera.addComponent(turntableController);		
+		this.controller = this.camera.getComponentOfType(TurntableController);
 
 		// gameState - used for state management
 		// gameType - used for initialization of player/players depending on mode of user choice
@@ -60,21 +65,8 @@ export class Game {
 		this.initComponents();
 
 		this.table = new Table(this.balls, this.edges, this.pockets);
-
-		/* this.camera.addComponent(
-			new OrbitController2(this.camera, this.domElement)
-		);
 		
-
-		// DODAL CONTROLLER
-		this.controller = this.camera.getComponentOfType(OrbitController2); */
-
-		this.camera.addComponent(
-			new TurntableController(this.camera, this.domElement)
-		);
-		
-		this.controller = this.camera.getComponentOfType(TurntableController);
-
+		this.UI = new UI(this.players, this.gameState);
 		this.initHandlers();
 	}
 
@@ -92,6 +84,7 @@ export class Game {
 	initComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
 
+		this.camera.addComponent(this.cue);
 		this.balls = this.scene.children
 			.slice(20, 36)
 			.map((node, i) => new Ball(i, node));
@@ -130,36 +123,36 @@ export class Game {
 	}
 
 	update(time, dt) {
+		if (this.gameState == GameState.LOADING) {
+			this.UI.showMain();
+			return;
+		}
+
+		this.UI.showInGame();
+
 		if (this.gameState == GameState.STARTED) {
 			if (this.keys["Space"]) {
 				this.hit();
-				this.gameState = GameState.RESOLVING_COLLISION;
-				this.controller.toggleBirdsEye();
 			}
 		}
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.table.update(time, dt);
-
+			
 			if (this.table.isStationary) {
-				this.checkForFaults();
-				console.log(this.players);
-				
 				this.controller.toggleBirdsEye();
+				this.checkForFaults();
 			}
 		}
 
 		if (this.gameState == GameState.BALL_IN_HAND) {
 			this.setCueBall();
 			this.setCamera();
-			this.gameState = GameState.IN_PROGRESS;
 		}
 
 		if (this.gameState == GameState.IN_PROGRESS) {
 			if (this.keys["Space"]) {
 				this.hit();
-				this.gameState = GameState.RESOLVING_COLLISION;
-				this.controller.toggleBirdsEye();
 			}
 		}
 
@@ -186,13 +179,18 @@ export class Game {
 		const velocity = this.controller.getViewVector();
 		vec3.scale(velocity, velocity, 2);
 		this.white.hit(velocity);
+		this.gameState = GameState.RESOLVING_COLLISION;
+		this.controller.toggleBirdsEye();
 	}
 
 	setCueBall() {
+		this.white.isPocketed = false;
 		this.white.set();
+		this.gameState = GameState.IN_PROGRESS;
 	}
 
 	switchPlayer() {
+		console.log("Switching players");
 		this.currentPlayer = this.currentPlayer == 1 ? 0 : 1;
 	}
 
@@ -211,7 +209,6 @@ export class Game {
 		const status = this.table.getStatus();
 
 		if (status.pocketedBalls.length == 0) {
-			console.log(`Status: Zero balls were hit. Switching players...`);
 			this.switchPlayer();
 			this.gameState = GameState.IN_PROGRESS;
 			this.table.reset();
@@ -236,19 +233,16 @@ export class Game {
 			if (this.checkEight(status.pocketedBalls)) {
 				if (playerOne.score == 7) {
 					this.winner = playerOne;
-					console.log(`FINISHED: Player ${this.winner.id} wins!`);
+					console.log("Winner" + this.winner);
 				} else {
 					this.winner = playerTwo;
-					console.log(
-						`FINISHED: You fouled. Player ${this.winner.id} wins!`
-					);
+					console.log("Winner" + this.winner);
 				}
 				this.gameState = GameState.FINISHED;
 				return;
 			}
 
 			if (this.checkWhite(status.pocketedBalls)) {
-				console.log(`FAULT: You pocketed the cue ball!`);
 				this.updatePoints(status.pocketedBalls);
 				this.switchPlayer();
 				this.gameState = GameState.BALL_IN_HAND;
@@ -258,20 +252,17 @@ export class Game {
 		} else {
 			if (this.checkEight(status.pocketedBalls)) {
 				if (playerOne.score == 7) {
-					winner = playerOne;
-					console.log(`FINISHED: Player ${winner.id} wins!`);
+					this.winner = playerOne;
+					console.log("Winner" + this.winner);
 				} else {
-					winner = playerTwo;
-					console.log(
-						`FINISHED: You fouled. Player ${winner.id} wins!`
-					);
+					this.winner = playerTwo;
+					console.log("Winner" + this.winner);
 				}
 				this.gameState = GameState.FINISHED;
 				return;
 			}
 
 			if (this.checkWhite(status.pocketedBalls)) {
-				console.log(`FAULT: You pocketed the cue ball!`);
 				this.updatePoints(status.pocketedBalls);
 				this.switchPlayer();
 				this.gameState = GameState.BALL_IN_HAND;
@@ -283,9 +274,6 @@ export class Game {
 				!this.checkType(status.firstHit) &&
 				this.gameState != GameState.STARTED
 			) {
-				console.log(
-					`FAULT: You pocketed a ball with different type than the initally hit ball!`
-				);
 				this.updatePoints(status.pocketedBalls);
 				this.switchPlayer();
 				this.gameState = GameState.BALL_IN_HAND;
@@ -329,7 +317,7 @@ export class Game {
 			const n = balls.filter((ball) => ball.type == player.type).length;
 			player.points += n;
 		}
-
+		this.UI.update();
 		this.clearPocketed(balls);
 	}
 
