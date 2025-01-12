@@ -1,5 +1,4 @@
 import { quat, vec3 } from 'glm';
-
 import { Transform } from '../core/Transform.js';
 
 export class TurntableController {
@@ -10,6 +9,9 @@ export class TurntableController {
         distance = 1,
         moveSensitivity = 0.004,
         zoomSensitivity = 0.002,
+        /****** NEW ******/
+        // Add a pivot (the position of the white ball) as a parameter or default
+        pivot = [0, 0, 0],
     } = {}) {
         this.node = node;
         this.domElement = domElement;
@@ -20,6 +22,10 @@ export class TurntableController {
 
         this.moveSensitivity = moveSensitivity;
         this.zoomSensitivity = zoomSensitivity;
+
+        /****** NEW ******/
+        // Store the pivot in the controller so we know around which point to orbit
+        this.pivot = pivot;
 
         this.initHandlers();
     }
@@ -74,14 +80,27 @@ export class TurntableController {
             return;
         }
 
+        // Create a quaternion rotation from yaw/pitch
         const rotation = quat.create();
         quat.rotateY(rotation, rotation, this.yaw);
         quat.rotateX(rotation, rotation, this.pitch);
+
+        // Assign this rotation to the camera/node transform
         transform.rotation = rotation;
 
-        const translation = [0, 0, this.distance];
+        // Create a vector pointing 'distance' units away along the camera's local Z
+        let translation = [0, 0, this.distance];
+
+        // Apply the pitch & yaw to that offset so it properly orbits around the pivot
         vec3.rotateX(translation, translation, [0, 0, 0], this.pitch);
         vec3.rotateY(translation, translation, [0, 0, 0], this.yaw);
+
+        /****** NEW or CHANGED ******/
+        // Instead of using [0, 0, 0] as the orbit center, we add the pivot's position 
+        // so the camera will orbit around the white ball (or whichever pivot you define).
+        vec3.add(translation, this.pivot, translation);
+
+        // Final position of the camera/node
         transform.translation = translation;
     }
 

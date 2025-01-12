@@ -17,6 +17,7 @@ import {
 	getLocalModelMatrix,
 	getGlobalViewMatrix,
 } from "../engine/core/SceneUtils.js";
+import { TurntableController } from "../engine/controllers/TurntableController.js";
 
 class Player {
 	constructor(id, type) {
@@ -73,13 +74,22 @@ export class Game {
 		//      new FirstPersonController(this.camera, this.domElement)
 		// );
 
-		this.camera.addComponent(
+		/* this.camera.addComponent(
 			new OrbitController2(this.camera, this.domElement)
 		);
 		this.table = new Table(this.balls, this.edges, this.pockets);
 
 		// DODAL CONTROLLER
 		this.controller = this.camera.getComponentOfType(OrbitController2);
+ */
+
+		this.camera.addComponent(
+			new TurntableController(this.camera, this.domElement)
+		);
+		this.table = new Table(this.balls, this.edges, this.pockets);
+
+		// DODAL CONTROLLER
+		this.controller = this.camera.getComponentOfType(TurntableController);
 
 		this.initHandlers();
 	}
@@ -137,7 +147,7 @@ export class Game {
 		this.coinFlip();
 		const whitePos =
 			this.white.node.getComponentOfType(Transform).translation;
-		this.controller.setTarget(whitePos);
+		this.controller.pivot = whitePos;
 		this.gameState = GameState.STARTED;
 	}
 
