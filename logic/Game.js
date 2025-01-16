@@ -119,8 +119,8 @@ export class Game {
 			this.white.node.getComponentOfType(Transform).translation;
 		const whitePos = translation;
 		this.controller.pivot = whitePos;
-		this.controller.yaw += Math.PI / 2;
-		this.controller.pitch -= Math.PI / 18;
+		this.controller.yaw = Math.PI / 2;
+		this.controller.pitch = -(Math.PI / 9);
 	}
 
 	update(time, dt) {
@@ -181,6 +181,7 @@ export class Game {
 		this.white.isPocketed = false;
 		this.white.set();
 		this.gameState = GameState.IN_PROGRESS;
+		this.setCamera();
 	}
 
 	switchPlayer() {

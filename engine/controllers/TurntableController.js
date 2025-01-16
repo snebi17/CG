@@ -31,7 +31,7 @@ export class TurntableController {
         this.originalYaw   = yaw;
         this.originalDistance = distance;
 
-		this.maxDistance =3;
+		this.maxDistance =2;
 		this.maxBirdsEyeDistance = 10;
 
         this.initHandlers();
