@@ -31,6 +31,9 @@ export class TurntableController {
         this.originalYaw   = yaw;
         this.originalDistance = distance;
 
+		this.maxDistance =3;
+		this.maxBirdsEyeDistance = 10;
+
         this.initHandlers();
     }
 
@@ -109,6 +112,13 @@ export class TurntableController {
 
     wheelHandler(e) {
         this.distance *= Math.exp(this.zoomSensitivity * e.deltaY);
+
+		if (this.isBirdsEye && this.distance > this.maxBirdsEyeDistance) {
+			this.distance = this.maxBirdsEyeDistance;
+		}
+		if (!this.isBirdsEye && this.distance > this.maxDistance) {
+			this.distance = this.maxDistance;
+		}
     }
 
     update(dt) {
