@@ -157,7 +157,6 @@ export class Game {
 		this.scene.traverse((node) => {
 			for (const component of node.components) {
 				component.update?.(time, dt);
-				console.log(component);
 			}
 		});
 	}
