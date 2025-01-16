@@ -1,168 +1,151 @@
-import { quat, vec3 } from "glm";
-import { Transform } from "../core/Transform.js";
+import { quat, vec3 } from 'glm';
+import { Transform } from '../core/Transform.js';
 
 export class TurntableController {
-	constructor(
-		node,
-		domElement,
-		{
-			pitch = 0,
-			yaw = 0,
-			distance = 1,
-			moveSensitivity = 0.004,
-			zoomSensitivity = 0.002,
-			pivot = [0, 0, 0],
-			birdsEyeDistance = 6,
-		} = {}
-	) {
-		this.node = node;
-		this.domElement = domElement;
 
-		this.pitch = pitch;
-		this.yaw = yaw;
-		this.distance = distance;
+    constructor(node, domElement, {
+        pitch = 0,
+        yaw = 0,
+        distance = 1,
+        moveSensitivity = 0.004,
+        zoomSensitivity = 0.002,
+        pivot = [0, 0, 0],
+        birdsEyeDistance = 6,
+    } = {}) {
+        this.node = node;
+        this.domElement = domElement;
 
-		this.moveSensitivity = moveSensitivity;
-		this.zoomSensitivity = zoomSensitivity;
+        this.pitch = pitch;  
+        this.yaw   = yaw;    
+        this.distance = distance;
 
-		this.pivot = pivot;
+        this.moveSensitivity = moveSensitivity;
+        this.zoomSensitivity = zoomSensitivity;
 
-		this.birdsEyeDistance = birdsEyeDistance;
-		this.isBirdsEye = false;
+        this.pivot = pivot;
 
-		this.originalPitch = pitch;
-		this.originalYaw = yaw;
-		this.originalDistance = distance;
+        this.birdsEyeDistance = birdsEyeDistance;
+        this.isBirdsEye = false;
 
-		this.initHandlers();
-	}
+        this.originalPitch = pitch;
+        this.originalYaw   = yaw;
+        this.originalDistance = distance;
 
-	initHandlers() {
-		this.pointerdownHandler = this.pointerdownHandler.bind(this);
-		this.pointerupHandler = this.pointerupHandler.bind(this);
-		this.pointermoveHandler = this.pointermoveHandler.bind(this);
-		this.wheelHandler = this.wheelHandler.bind(this);
+        this.initHandlers();
+    }
 
-		this.domElement.addEventListener(
-			"pointerdown",
-			this.pointerdownHandler
-		);
-		this.domElement.addEventListener("wheel", this.wheelHandler);
-	}
+    initHandlers() {
+        this.pointerdownHandler = this.pointerdownHandler.bind(this);
+        this.pointerupHandler   = this.pointerupHandler.bind(this);
+        this.pointermoveHandler = this.pointermoveHandler.bind(this);
+        this.wheelHandler       = this.wheelHandler.bind(this);
 
-	toggleBirdsEye() {
-		if (!this.isBirdsEye) {
-			this.originalPitch = this.pitch;
-			this.originalYaw = this.yaw;
-			this.originalDistance = this.distance;
+        this.domElement.addEventListener('pointerdown', this.pointerdownHandler);
+        this.domElement.addEventListener('wheel', this.wheelHandler);
+    }
 
-			this.pitch = -Math.PI / 2;
-			this.yaw = 0;
-			this.distance = this.birdsEyeDistance;
+    toggleBirdsEye() {
+        if (!this.isBirdsEye) {
+            this.originalPitch = this.pitch;
+            this.originalYaw   = this.yaw;
+            this.originalDistance = this.distance;
 
-			this.isBirdsEye = true;
-		} else {
-			this.pitch = this.originalPitch;
-			this.yaw = this.originalYaw;
-			this.distance = this.originalDistance;
+            this.pitch = -Math.PI / 2;
+            this.yaw   = 0;
+            this.distance = this.birdsEyeDistance;
 
-			this.isBirdsEye = false;
-		}
-	}
+            this.isBirdsEye = true;
+        } else {
+            this.pitch = this.originalPitch;
+            this.yaw   = this.originalYaw;
+            this.distance = this.originalDistance;
 
-	pointerdownHandler(e) {
-		this.domElement.setPointerCapture(e.pointerId);
-		this.domElement.requestPointerLock();
-		this.domElement.removeEventListener(
-			"pointerdown",
-			this.pointerdownHandler
-		);
-		this.domElement.addEventListener("pointerup", this.pointerupHandler);
-		this.domElement.addEventListener(
-			"pointermove",
-			this.pointermoveHandler
-		);
-	}
+            this.isBirdsEye = false;
+        }
+    }
 
-	pointerupHandler(e) {
-		this.domElement.releasePointerCapture(e.pointerId);
-		this.domElement.ownerDocument.exitPointerLock();
-		this.domElement.addEventListener(
-			"pointerdown",
-			this.pointerdownHandler
-		);
-		this.domElement.removeEventListener("pointerup", this.pointerupHandler);
-		this.domElement.removeEventListener(
-			"pointermove",
-			this.pointermoveHandler
-		);
-	}
+    pointerdownHandler(e) {
+        this.domElement.setPointerCapture(e.pointerId);
+        this.domElement.requestPointerLock();
+        this.domElement.removeEventListener('pointerdown', this.pointerdownHandler);
+        this.domElement.addEventListener('pointerup',   this.pointerupHandler);
+        this.domElement.addEventListener('pointermove', this.pointermoveHandler);
+    }
 
-	pointermoveHandler(e) {
-		if (this.isBirdsEye) {
-			return;
-		}
+    pointerupHandler(e) {
+        this.domElement.releasePointerCapture(e.pointerId);
+        this.domElement.ownerDocument.exitPointerLock();
+        this.domElement.addEventListener('pointerdown', this.pointerdownHandler);
+        this.domElement.removeEventListener('pointerup',   this.pointerupHandler);
+        this.domElement.removeEventListener('pointermove', this.pointermoveHandler);
+    }
 
-		const dx = e.movementX;
-		const dy = e.movementY;
+    pointermoveHandler(e) {
+        if (this.isBirdsEye) {
+            return;
+        }
 
-		this.pitch -= dy * this.moveSensitivity;
-		this.yaw -= dx * this.moveSensitivity;
+        const dx = e.movementX;
+        const dy = e.movementY;
 
-		const twopi = Math.PI * 2;
-		const halfpi = Math.PI / 2;
+        this.pitch -= dy * this.moveSensitivity;
+        this.yaw   -= dx * this.moveSensitivity;
 
-		const minPitchDeg = -40;
-		const maxPitchDeg = -10;
-		const deg2Rad = Math.PI / 180;
+        const twopi  = Math.PI * 2;
+        const halfpi = Math.PI / 2;
 
-		const minPitch = minPitchDeg * deg2Rad;
-		const maxPitch = maxPitchDeg * deg2Rad;
+        const minPitchDeg = -40;
+        const maxPitchDeg = -10;
+        const deg2Rad = Math.PI / 180;
 
-		this.pitch = Math.min(Math.max(this.pitch, minPitch), maxPitch);
+        const minPitch = minPitchDeg * deg2Rad;
+        const maxPitch = maxPitchDeg * deg2Rad;
 
-		this.pitch = Math.min(Math.max(this.pitch, -halfpi), halfpi);
-		this.yaw = ((this.yaw % twopi) + twopi) % twopi;
-	}
+        this.pitch = Math.min(Math.max(this.pitch, minPitch), maxPitch);
 
-	wheelHandler(e) {
-		this.distance *= Math.exp(this.zoomSensitivity * e.deltaY);
-	}
+        this.pitch = Math.min(Math.max(this.pitch, -halfpi), halfpi);
+        this.yaw = ((this.yaw % twopi) + twopi) % twopi;
+    }
 
-	update(dt) {
-		const transform = this.node.getComponentOfType(Transform);
-		if (!transform) {
-			return;
-		}
+    wheelHandler(e) {
+        this.distance *= Math.exp(this.zoomSensitivity * e.deltaY);
+    }
 
-		if (this.isBirdsEye) {
-			const rotation = quat.create();
-			quat.rotateX(rotation, rotation, this.pitch);
-			transform.rotation = rotation;
+    update(dt) {
+        const transform = this.node.getComponentOfType(Transform);
+        if (!transform) {
+            return;
+        }
 
-			transform.translation = [0, this.distance, 0];
-		} else {
-			const rotation = quat.create();
-			quat.rotateY(rotation, rotation, this.yaw);
-			quat.rotateX(rotation, rotation, this.pitch);
-			transform.rotation = rotation;
+        if (this.isBirdsEye) {
+            const rotation = quat.create();
+            quat.rotateX(rotation, rotation, this.pitch);
+            transform.rotation = rotation;
 
-			let translation = [0, 0, this.distance];
-			vec3.rotateX(translation, translation, [0, 0, 0], this.pitch);
-			vec3.rotateY(translation, translation, [0, 0, 0], this.yaw);
+            transform.translation = [0, this.distance, 0];
+        } 
+        else {
+            const rotation = quat.create();
+            quat.rotateY(rotation, rotation, this.yaw);
+            quat.rotateX(rotation, rotation, this.pitch);
+            transform.rotation = rotation;
 
-			vec3.add(translation, this.pivot, translation);
-			transform.translation = translation;
-		}
-	}
+            let translation = [0, 0, this.distance];
+            vec3.rotateX(translation, translation, [0, 0, 0], this.pitch);
+            vec3.rotateY(translation, translation, [0, 0, 0], this.yaw);
 
-	getViewVector() {
-		const forward = vec3.fromValues(
-			Math.cos(this.pitch) * Math.sin(this.yaw),
-			0,
-			Math.cos(this.pitch) * Math.cos(this.yaw)
-		);
+            vec3.add(translation, this.pivot, translation);
+            transform.translation = translation;
+        }
+    }
+    
+    getViewVector() {
+        const forward = vec3.fromValues(
+            Math.cos(this.pitch) * Math.sin(this.yaw),
+            0,
+            Math.cos(this.pitch) * Math.cos(this.yaw)
+        );
 
-		return forward.negate();
-	}
+        return forward.negate();
+    }
 }

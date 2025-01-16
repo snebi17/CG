@@ -18,7 +18,6 @@ const instructions = document.getElementById("instructions");
 
 let gameArea = document.getElementById("game-area");
 let userInterface = document.getElementById("user-interface");
-initialize();
 gameArea.classList.add("hidden");
 
 startButton.addEventListener("click", () => {
@@ -27,6 +26,8 @@ startButton.addEventListener("click", () => {
 
 	playerOneName = playerOne.value.length > 0 ? playerOne.value : "Igralec #1";
 	playerTwoName = playerTwo.value.length > 0 ? playerTwo.value : "Igralec #2";
+	initialize();
+
 });
 
 instructionsButton.addEventListener("click", () => {

@@ -9,12 +9,10 @@ export class UI {
         this.display();
     }
 
-    showWinner(winner) {
-
-    }
-
     display() {
         const { playerOne, playerTwo } = this.getPlayerInfos();
+        console.log(playerOne)
+        console.log(playerTwo)
 
         this.playerOne.innerText = `${playerOne.name} (${playerOne.type}): ${playerOne.points}`;
         this.playerTwo.innerText = `${playerTwo.name} (${playerTwo.type}): ${playerTwo.points}`;

@@ -1,4 +1,4 @@
-import { Camera, Transform } from "../engine/core.js";
+import { Camera, Model, Transform } from "../engine/core.js";
 
 import { Ball } from "./components/Ball.js";
 import { Table } from "./components/Table.js";
@@ -37,10 +37,7 @@ export class Game {
 		{
 			gameState = GameState.STARTED,
 			gameType = null,
-			players = [
-				new Player(0, null, playerNames.playerOne),
-				new Player(1, null, playerNames.playerTwo),
-			],
+			players = [new Player(0, null, playerNames.playerOne), new Player(1, null, playerNames.playerTwo)],
 			currentPlayer = -1,
 			winner = null,
 			keys = {},
@@ -51,11 +48,8 @@ export class Game {
 		this.renderer = renderer;
 		this.domElement = domElement;
 
-		const turntableController = new TurntableController(
-			this.camera,
-			this.domElement
-		);
-		this.camera.addComponent(turntableController);
+		const turntableController = new TurntableController(this.camera, this.domElement);
+		this.camera.addComponent(turntableController);		
 		this.controller = this.camera.getComponentOfType(TurntableController);
 
 		// gameState - used for state management
@@ -72,7 +66,7 @@ export class Game {
 		this.initComponents();
 
 		this.table = new Table(this.balls, this.edges, this.pockets);
-
+		
 		this.UI = new UI(this.players, this.gameState);
 		this.initHandlers();
 	}
@@ -90,7 +84,7 @@ export class Game {
 
 	initComponents() {
 		this.cue = new Cue(this.camera, this.scene.children.at(0), 0);
-
+		this.cue.node.removeComponentsOfType(Model);
 		this.camera.addComponent(this.cue);
 		this.balls = this.scene.children
 			.slice(20, 36)
@@ -126,7 +120,7 @@ export class Game {
 		const whitePos = translation;
 		this.controller.pivot = whitePos;
 		this.controller.yaw += Math.PI / 2;
-		this.controller.pitch -= Math.PI / 10;
+		this.controller.pitch -= Math.PI / 18;
 	}
 
 	update(time, dt) {
@@ -138,7 +132,7 @@ export class Game {
 
 		if (this.gameState == GameState.RESOLVING_COLLISION) {
 			this.table.update(time, dt);
-
+			
 			if (this.table.isStationary) {
 				this.controller.toggleBirdsEye();
 				this.checkForFaults();
